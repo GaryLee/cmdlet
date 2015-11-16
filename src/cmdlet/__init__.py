@@ -6,7 +6,12 @@ import cmd
 
 __all__ = [
     'Pipe',
-    'pipe',
-    'cmd',
+    'PipeFunction',
     'UnregisteredPipeType',
+    'register_type',
+    'unregister_type',
+    'unregister_all_types',
+    'has_registered_type',
+    'get_item_creator',
+    'cmd',
 ]

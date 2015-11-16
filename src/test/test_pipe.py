@@ -138,6 +138,28 @@ def test_pipe_reduce():
     except TypeError as e:
         assert e.message == 'A reducer must have input.'
 
+
+def test_pipe_chain():
+    import string
+    register_default_types()
+
+    @pipe.reduce
+    def count(accu, data):
+        return accu + 1
+
+    @pipe.filter
+    def low_pass(data, threshold):
+        return data <= threshold
+
+    count_low_pass = low_pass(10) | count(init=0)
+
+    ans = run(range(1,100) | count_low_pass)
+    assert ans == 10
+
+    ans = run(range(1,100) | count_low_pass(20))
+    assert ans == 20
+
+
 def test_pipe_type_registration():
 
     unregister_all_types()

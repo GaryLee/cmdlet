@@ -128,6 +128,7 @@ class Pipe(object):
         :param next: The Pipe object to be appended to tail.
         :type next: Pipe object.
         """
+        next.chained = True
         if self.next:
             self.next.append(next)
         else:

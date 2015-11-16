@@ -221,13 +221,13 @@ def get_item_creator(item_type):
 class PipeFunction:
     """A name space for decorator of Pipe functions."""
     @staticmethod
-    def pipe(func):
+    def func(generator):
         """Wrap a generator function to Pipe object.
-        :param func: The generator function to be wrapped.
-        :type func: generator
+        :param generator: The generator function to be wrapped.
+        :type generator: generator
         :returns: Pipe object
         """
-        return Pipe(func)
+        return Pipe(generator)
 
     @staticmethod
     def map(func):

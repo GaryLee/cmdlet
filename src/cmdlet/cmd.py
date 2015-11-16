@@ -9,14 +9,14 @@ import string
 from StringIO import StringIO
 from cmdlet import Pipe, PipeFunction, register_type, unregister_type
 
-func = PipeFunction
+pipe = PipeFunction
 
-@func.pipe
+@pipe.func
 def seq(prev, sequence):
     for i in sequence:
         yield i
 
-@func.pipe
+@pipe.func
 def pair(prev, **kw):
     for i, d in enumerate(prev):
         if (i % 2) == 0:
@@ -24,12 +24,12 @@ def pair(prev, **kw):
         else:
             yield (d_prev, d)
 
-@func.pipe
+@pipe.func
 def format(prev, format_string):
     for i in prev:
         yield (format_string % i)
 
-@func.pipe
+@pipe.func
 def stdout(prev, endl='', thru=False):
     for i in prev:
         sys.stdout.write(str(i))
@@ -40,7 +40,7 @@ def stdout(prev, endl='', thru=False):
         else:
             yield
 
-@func.pipe
+@pipe.func
 def stderr(prev, endl='', thru=False):
     for i in prev:
         sys.stderr.write(str(i))
@@ -51,7 +51,7 @@ def stderr(prev, endl='', thru=False):
         else:
             yield
 
-@func.pipe
+@pipe.func
 def sh(prev, *args, **kw):
     cmdline = ' '.join(args)
     if not cmdline:
@@ -90,10 +90,9 @@ def result(cmd):
     return cmd.result()
 
 def register_default_types():
-    register_type(types.TypeType, func.map)
-    register_type(types.FunctionType, func.pipe)
-    register_type(types.MethodType, func.pipe)
-    register_type(types.LambdaType, func.pipe)
+    register_type(types.TypeType, pipe.map)
+    register_type(types.FunctionType, pipe.func)
+    register_type(types.MethodType, pipe.func)
     register_type(types.TupleType, seq)
     register_type(types.ListType, seq)
     register_type(types.GeneratorType, seq)

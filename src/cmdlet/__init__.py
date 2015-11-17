@@ -12,7 +12,7 @@ generator to Pipe object. Check cmdlet.cmd module for its applications.
 """
 
 from cmdlet import *
-import cmd
+import cmds
 
 __license__ = "MIT"
 __author__ = "Gary Lee <garywlee@gmail.com>"
@@ -28,5 +28,5 @@ __all__ = [
     'unregister_all_types',
     'has_registered_type',
     'get_item_creator',
-    'cmd',
+    'cmds',
 ]

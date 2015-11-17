@@ -165,8 +165,8 @@ class Pipe(object):
         return list(self.iter())
 
 def register_type(item_type, item_creator):
-    """Register data type to Pipe class. Check Pipe.__or__ and Pipe.__ror__ for
-    detail.
+    """Register data type to Pipe class. Check :py:meth:`Pipe.__or__` and
+    :py:meth:`Pipe.__ror__` for detail.
 
     :param item_type: The type of data object which used in pipe cascading.
     :param item_creator: A function to convert data to Pipe object.
@@ -210,10 +210,12 @@ def get_item_creator(item_type):
 
 
 class PipeFunction:
-    """A name space for decorator of Pipe functions."""
+    """A name space for decorator of Pipe functions.
+    """
     @staticmethod
     def func(generator):
         """Wrap a generator function to Pipe object.
+
         :param generator: The generator function to be wrapped.
         :type generator: generator
         :returns: Pipe object

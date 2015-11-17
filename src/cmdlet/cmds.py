@@ -24,9 +24,7 @@ def run(cmd):
     :returns: The last result.
 
     .. seealso::
-
-    Module :py:meth:`Pipe.run`
-        Documentation of the :py:mod:`zipfile` standard module.
+        :py:meth:`cmdlet.Pipe.run`
     """
     return cmd.run()
 
@@ -39,9 +37,7 @@ def result(cmd):
     :returns: The list which contains the result of pipe.
 
     .. seealso::
-
-    Module :py:meth:`Pipe.result`
-        Documentation of the :py:mod:`zipfile` standard module.
+        :py:meth:`cmdlet.Pipe.result`
     """
     return cmd.result()
 

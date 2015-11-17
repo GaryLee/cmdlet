@@ -6,15 +6,13 @@
 Welcome to cmdlet's documentation!
 ==================================
 
+.. automodule:: cmdlet
+
 .. toctree::
    :maxdepth: 2
-
-.. automodule:: cmdlet
-    :members:
-
-.. automodule:: cmdlet.cmds
-    :members:
-
+   
+	Cmdlet introduction <cmdlet>
+	Cmds introduction <cmds>
 	
 Indices and tables
 ==================

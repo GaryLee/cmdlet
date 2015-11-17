@@ -5,7 +5,7 @@ if '../' not in sys.path:
     sys.path.insert(0, '../')
 
 from cmdlet import *
-from cmdlet.cmd import *
+from cmdlet.cmds import *
 
 upper = pipe.map(string.upper)
 lower = pipe.map(string.lower)

@@ -14,7 +14,7 @@ def test_cmdlet_import():
         'unregister_all_types',
         'has_registered_type',
         'get_item_creator',
-        'cmd',
+        'cmds',
     ]
 
     from cmdlet import *
@@ -41,6 +41,6 @@ def test_cmd_import():
         'sh'
     ]
 
-    from cmdlet.cmd import *
+    from cmdlet.cmds import *
     for name in import_names:
         assert name in locals()

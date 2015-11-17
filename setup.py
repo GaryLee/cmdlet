@@ -2,15 +2,18 @@
 
 from distutils.core import setup
 
+version = '0.1.1'
+stage = '-alpha'
+
 setup(
   name = 'cmdlet',
   packages = ['cmdlet'],
-  version = '0.1',
+  version = version,
   description = 'Cmdlet provides pipe-like mechanism to cascade functions and generators.',
   author = 'Gary Lee',
   author_email = 'garywlee@gmail.com',
   url = 'https://github.com/GaryLee/cmdlet', 
-  download_url = 'https://github.com/GaryLee/cmdlet/tarball/0.1',
+  download_url = 'https://github.com/GaryLee/cmdlet/tarball/v%s%s' % (version, stage),
   keywords = ['pipe', 'generator', 'iterator'],
   classifiers = [],
 )

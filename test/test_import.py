@@ -5,7 +5,7 @@ def test_cmdlet_import():
     if '../' not in sys.path:
         sys.path.insert(0, '../')
 
-    import_names = [
+    match_names = [
         'Pipe',
         'PipeFunction',
         'UnregisteredPipeType',
@@ -17,30 +17,22 @@ def test_cmdlet_import():
         'cmds',
     ]
 
-    from cmdlet import *
-    for name in import_names:
-        assert name in locals()
+    import cmdlet
+    import_names = dir(cmdlet)
+    for name in match_names:
+        assert name in import_names
 
-def test_cmd_import():
+def test_cmds_import():
     import sys
     if '../' not in sys.path:
         sys.path.insert(0, '../')
 
-    import_names = [
-        'Pipe',
-        'PipeFunction',
-        'register_type',
-        'unregister_type',
-        'run',
-        'result',
-        'seq',
-        'pair',
-        'format',
-        'stdout',
-        'stderr',
-        'sh'
-    ]
+    match_names = ['Pipe', 'PipeFunction', 'StringIO', 'count', 'enum',
+        'fileobj', 'flatten', 'format', 'grep', 'items', 'match', 'pack',
+        'pipe', 'register_default_types', 'register_type', 'result', 'run',
+        'seq', 'sh', 'stderr', 'stdout', 'unregister_type', 'wildcard']
 
-    from cmdlet.cmds import *
-    for name in import_names:
-        assert name in locals()
+    import cmdlet.cmds as cmds
+    import_names = dir(cmds)
+    for name in match_names:
+        assert name in import_names

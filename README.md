@@ -1,11 +1,10 @@
 # What is cmdlet?
 
-Cmdlet is a Python module. It provides pipe-like echanism to cascade functions
-and generators. It uses symbol(**|**) to convert function to Pipe object and
-cascade them. This sequence of commands can be executed and evaluated later.
-It works like the pipe mechanism in Unix shell.
+Cmdlet provides pipe-like mechanism to cascade functions and generators. It
+uses symbol(**|**) to convert function to Pipe object and cascade them. This
+sequence of commands can be executed and evaluated later. Just like the pipe
+mechanism in Unix shell. For example:
 
-For example:
 ```python
     from cmdlet.cmds import *
 
@@ -33,9 +32,10 @@ For example:
 First, we created commands and use **|** to cascade them. Then, we execute
 commands by run(), result() or iterator.
 
-cmdlet can convert corresponding types to Pipe object automatically. In above example,
-range(10) is a iterator not a Pipe object. But, pipe.filter wrapped lambda expression
-to a Pipe object. So, range(10) is converted to a Pipe object automatically.
+cmdlet can convert corresponding types to Pipe object automatically. In above
+example, range(10) is a iterator not a Pipe object. Because second item is
+a Pipe object(made by pipe.filter), it turns out first item to be converted
+to a Pipe object automatically.
 
 > NOTE:
 > When using cmdlet's pipe mechanism, make sure one of your

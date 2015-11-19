@@ -213,4 +213,50 @@ directly.
 
 cmdlet.cmds supports some utilties for easy to use pipe functions.
 
-TODO: describe utilities here.
+## Pipe commnds for iterable object.
+
+TODO: describe pack, enum, counter, flatten, items, seq, attr, attrs, attrdict
+
+## Pipe commands for file
+
+TODO: describe stdout, stder, fileobj
+
+## Pipe commands for shell
+
+TODO: describe usage of sh
+
+## Pipe commands for strings
+
+### Alias of string method
+
+| Command         | Description                                           |
+| --------------- | ----------------------------------------------------- |
+| upper           | alias of string.upper                                 |
+| lower           | alias of string.lower                                 |
+| capwords        | alias of string.capwords                              |
+| capitalize      | alias of string.capitalize                            |
+| lstrip          | alias of string.lstrip                                |
+| rstrip          | alias of string.rstrip                                |
+| strip           | alias of string.strip                                 |
+| expandtabs      | alias of string.expandtabs                            |
+| strip           | alias of string.strip                                 |
+| find            | alias of string.find                                  |
+| format          | alias of % operator of string (not string.format)     |
+| rfind           | alias of string.rfind                                 |
+| count           | alias of string.count                                 |
+| split           | alias of string.split                                 |
+| rsplit          | alias of string.rsplit                                |
+| swapcase        | alias of string.swapcase                              |
+| translate       | alias of string.translate                             |
+| ljust           | alias of string.ljust                                 |
+| rjust           | alias of string.rjust                                 |
+| center          | alias of string.center                                |
+| zfill           | alias of string.zfill                                 |
+| replace         | alias of string.replace                               |
+| join            | alias of string.join                                  |
+| substitute      | alias of string.Template.substitute                   |
+| safe_substitute | alias of string.Template.safe_substitute              |
+
+### String split, search and match
+
+TODO: desribe grep, match, wildcard, resplit, sub, subn

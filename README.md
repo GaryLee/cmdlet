@@ -93,16 +93,16 @@ There are 3 ways to execute piped commands and get the result.
 
 # Function wrapper
 
-Unless using auto-type conversion of cmdlet.cmds module, function should not
-be used in pipes directly. Cmdlet provides a set of basic wrappers to wrap
-function to Pipe object.
+Function should not be used in pipes directly, unless using auto-type
+conversion. Cmdlet provides a set of basic wrappers to wrap function to Pipe
+object.
 
 ## pipe.func(generator_function)
 
 The most basic wrapper. In Python, generator function is a function with yield
 statement in it. The generator_function defined here is a Python generator
-function with at least one argument. The argument is a generator object passed
-from previous Pipe object. generator_function can take it as input or just
+function with at least one argument. The first argument is a generator object
+passed by previous Pipe object. generator_function can take it as input or just
 leave it. It looks like:
 
 ```python
@@ -137,7 +137,7 @@ def my_mapper(data):
 
 Anything returned by mapper will be sent to next Pipe object. If mapper return
 None, next Pipe object will receive None. That is, you can't use mapper to
-filter data out. It's the job of filter function. Use pipe.filter instead.
+filter data out. That's why we have pipe.filter.
 
 ## pipe.filter(function)
 
@@ -172,8 +172,8 @@ def my_reducer(accum_result, data):
 
 ## pipe.stopper(function)
 
-Wrap function as a stopper. A stopper is used to stop the pipe execution. It
-returns true to stop the pipe execution. Return false to pass the data to next.
+Wrap function as a stopper. Stopper is used to stop the pipe execution. It
+returns true to stop the pipe execution. Return false to pass data to next.
 It looks like:
 
 ```python

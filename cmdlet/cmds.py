@@ -6,6 +6,7 @@ by cmdlet.
 """
 
 import sys
+import os
 import re
 import types
 import subprocess
@@ -376,7 +377,7 @@ def subn(prev, pattern, repl, string, *args, **kw):
     pattern_obj = re.compile(pattern, *args, **kw)
     for s in prev:
         yield pattern_obj.subn(s, repl, string, count=count)
-        
+
 
 @pipe.func
 def wildcard(prev, pattern, *args, **kw):
@@ -485,14 +486,20 @@ def fileobj(prev, file_handle, endl='', thru=True):
 
 @pipe.func
 def sh(prev, *args, **kw):
-    """This pipe read data from previous iterator and write it to stderr.
+    """sh pipe execute shell command specified by args. If previous pipe exists,
+    read data from it and write it to stdin of shell process. The stdout of
+    shell process will be passed to next pipe object line by line.
+
+    For example:
+
+    py_files = result(sh('ls') | strip | wildcard('*.py'))
 
     :param prev: The previous iterator of pipe.
     :type prev: Pipe
-    :param args: The end-of-line symbol for each output.
+    :param args: The command line arguments. It will be joined by space character.
     :type args: list of string.
-    :param kw: The end-of-line symbol for each output.
-    :type kw: dictionary of options. Add 'endl' in kw to specify end-of-line symbol.
+    :param kw: arguments for subprocess.Popen.
+    :type kw: dictionary of options.
     :returns: generator
     """
     cmdline = ' '.join(args)
@@ -524,6 +531,23 @@ def sh(prev, *args, **kw):
         yield line
 
     process.wait()
+
+@pipe.func
+def walk(prev, inital_path, *args, **kw):
+    """This pipe wrap os.walk and yield absolute path one by one.
+
+    :param prev: The previous iterator of pipe.
+    :type prev: Pipe
+    :param args: The end-of-line symbol for each output.
+    :type args: list of string.
+    :param kw: The end-of-line symbol for each output.
+    :type kw: dictionary of options. Add 'endl' in kw to specify end-of-line symbol.
+    :returns: generator
+    """
+    for dir_path, dir_names, filenames in os.walk(inital_path):
+        for filename in filenames:
+            yield os.path.join(dir_path, filename)
+
 
 #: alias of string.upper
 upper = pipe.map(lambda s, *args, **kw: s.upper(*args, **kw))

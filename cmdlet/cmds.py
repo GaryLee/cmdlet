@@ -70,6 +70,7 @@ def items(prev, dict_obj):
     for kv in dict_obj.items():
         yield kv
 
+
 @pipe.func
 def attr(prev, attr_name):
     """attr pipe can extract attribute value of object.
@@ -165,6 +166,32 @@ def flatten(prev, depth=sys.maxsize):
         else:
             yield d
 
+
+@pipe.func
+def values(prev, *keys, **kw):
+    """values pipe extract value from previous pipe.
+
+    If previous pipe send a dictionary to values pipe, keys should contains
+    the key of dictionary which you want to get. If previous pipe send list or
+    tuple,
+
+    :param prev: The previous iterator of pipe.
+    :type prev: Pipe
+    :param depth: The deepest nested level to be extracted. 0 means no extraction.
+    :type depth: integer
+    :returns: generator
+    """
+    d = prev.next()
+    if isinstance(d, types.DictionaryType):
+        yield [d[k] for k in keys if d.has_key(k)]
+        for d in prev:
+            yield [d[k] for k in keys if d.has_key(k)]
+    elif isinstance(d, (types.ListType, types.TupleType)):
+        yield [d[i] for i in keys if 0 <= i < len(d)]
+        for d in prev:
+            yield [d[i] for i in keys if 0 <= i < len(d)]
+    else:
+        raise Exception('values pipe only allows dict, list or tuple.')
 
 @pipe.func
 def counter(prev):
@@ -453,6 +480,45 @@ def stderr(prev, endl='', thru=True):
         else:
             yield
 
+@pipe.func
+def readline(prev, mode='r', trim=string.rstrip, start=0, end=sys.maxsize, index=False):
+    """This pipe get filenames or file object from previous pipe and read the
+    content of file. Then, send the content of file line by line to next pipe.
+
+    if maxlines is specified, only
+
+    :param prev: The previous iterator of pipe.
+    :type prev: Pipe
+    :param mode: The mode to open file. default is 'r'
+    :type mode: str
+    :param trim: The function to trim the line before send to next pipe.
+    :type trim: function object.
+    :param maxlines: The maximum line number to read.
+    :type maxlines: integer
+    :param start: if star is specified, only line number larger or equal to start will be sent.
+    :type start: integer
+    :param index: if True, ouput becomes (line_no, line_content)
+    :type index: boolean
+    :returns: generator
+    """
+    for filename in prev:
+        if isinstance(filename, types.FileType):
+            fd = filename
+        else:
+            fd = file(filename, mode)
+        try:
+            for line_no, line in enumerate(fd, 1):
+                if line_no < start:
+                    continue
+                if index:
+                    yield (line_no, trim(line))
+                else:
+                    yield trim(line)
+                if line_no >= end:
+                    break
+        finally:
+            if fd != filename:
+                fd.close()
 
 @pipe.func
 def fileobj(prev, file_handle, endl='', thru=True):
@@ -490,6 +556,11 @@ def sh(prev, *args, **kw):
     read data from it and write it to stdin of shell process. The stdout of
     shell process will be passed to next pipe object line by line.
 
+    A optional keyword argument 'trim' can pass a function into sh pipe. It is
+    used to trim the output from shell process. The default trim function is
+    string.rstrip. Therefore, any space characters in tail of
+    shell process output line will be removed.
+
     For example:
 
     py_files = result(sh('ls') | strip | wildcard('*.py'))
@@ -511,6 +582,8 @@ def sh(prev, *args, **kw):
             while True:
                 yield None
 
+    trim = string.rstrip if 'trim' not in kw else kw['trim']
+
     process = subprocess.Popen(cmdline, shell=True,
         stdin=subprocess.PIPE, stdout=subprocess.PIPE,
         **kw)
@@ -528,7 +601,7 @@ def sh(prev, *args, **kw):
         stdin_buffer.close()
 
     for line in process.stdout:
-        yield line
+        yield trim(line)
 
     process.wait()
 

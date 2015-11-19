@@ -57,17 +57,86 @@ def seq(prev, sequence):
 
 
 @pipe.func
-def items(prev, dict_object):
+def items(prev, dict_obj):
     """Pipe wrapper for any dict object.
 
     :param prev: The previous iterator of pipe.
     :type prev: Pipe
-    :param dict_object: The dict object to be wrapped.
-    :type dict_object: dict
+    :param dict_obj: The dict object to be wrapped.
+    :type dict_obj: dict
     :returns: generator
     """
-    for kv in dict_object.items():
+    for kv in dict_obj.items():
         yield kv
+
+@pipe.func
+def attr(prev, attr_name):
+    """attr pipe can extract attribute value of object.
+
+    :param prev: The previous iterator of pipe.
+    :type prev: Pipe
+    :param attr_name: The name of attribute
+    :type attr_name: str
+    :returns: generator
+    """
+    for obj in prev:
+        if hasattr(obj, attr_name):
+            yield getattr(obj, attr_name)
+
+@pipe.func
+def attrs(prev, attr_names):
+    """attrs pipe can extract attribute values of object.
+
+    If attr_names is a list and its item is not a valid attribute of
+    prev's object. It will be excluded from yielded dict.
+
+    :param prev: The previous iterator of pipe.
+    :type prev: Pipe
+    :param attr_names: The list of attribute names
+    :type attr_names: str of list
+    :returns: generator
+    """
+    for obj in prev:
+        attr_values = []
+        for name in attr_names:
+            if hasattr(obj, name):
+                attr_values.append(getattr(obj, name))
+        yield attr_values
+
+@pipe.func
+def attrdict(prev, attr_names):
+    """attrdict pipe can extract attribute values of object into a dict.
+
+    The argument attr_names can be a list or a dict.
+
+    If attr_names is a list and its item is not a valid attribute of
+    prev's object. It will be excluded from yielded dict.
+
+    If attr_names is dict and the key doesn't exist in prev's object.
+    the value of corresponding attr_names key will be copy to yielded dict.
+
+    :param prev: The previous iterator of pipe.
+    :type prev: Pipe
+    :param attr_names: The list or dict of attribute names
+    :type attr_names: str of list or dict
+    :returns: generator
+    """
+    if isinstance(attr_names, types.DictionaryType):
+        for obj in prev:
+            attr_values = dict()
+            for name in attr_names.keys():
+                if hasattr(obj, name):
+                    attr_values[name] = getattr(obj, name)
+                else:
+                    attr_values[name] = attr_names[name]
+            yield attr_values
+    else:
+        for obj in prev:
+            attr_values = dict()
+            for name in attr_names:
+                if hasattr(obj, name):
+                    attr_values[name] = getattr(obj, name)
+            yield attr_values
 
 
 @pipe.func
@@ -97,16 +166,16 @@ def flatten(prev, depth=sys.maxsize):
 
 
 @pipe.func
-def count(prev):
-    """count pipe count how many data pass from previous pipe.
+def counter(prev):
+    """counter pipe count how many data pass from previous pipe.
 
     This pipe will dropped all received data and return counting value after
     last data.
 
     :param prev: The previous iterator of pipe.
     :type prev: Pipe
-    :param dict_object: The dict object to be wrapped.
-    :type dict_object: dict
+    :param dict_obj: The dict object to be wrapped.
+    :type dict_obj: dict
     :returns: generator
     """
     count = 0
@@ -198,27 +267,30 @@ def grep(prev, pattern, *args, **kw):
     :type invert: boolean
     :returns: generator
     """
-    import re
-
-    invert = False
-    if kw.has_key('invert'):
-        invert = kw.pop('invert')
-
-    pattern_object = re.compile(pattern, *args, **kw)
+    invert = 'invert' in kw and kw.pop('invert')
+    pattern_obj = re.compile(pattern, *args, **kw)
 
     if not invert:
         for data in prev:
-            if pattern_object.match(data):
+            if pattern_obj.match(data):
                 yield data
     else:
         for data in prev:
-            if not pattern_object.match(data):
+            if not pattern_obj.match(data):
                 yield data
 
 @pipe.func
 def match(prev, pattern, *args, **kw):
     """The pipe greps the data passed from previous generator according to
-    given regular expression. The data passed to next pipe is a MatchObject.
+    given regular expression. The data passed to next pipe is MatchObject
+    , dict or tuple which determined by 'to' in keyword argument.
+
+    By default, match pipe yields MatchObject. Use 'to' in keyword argument
+    to change the type of match result.
+
+    If 'to' is dict, yield MatchObject.groupdict().
+    If 'to' is tuple, yield MatchObject.groups().
+    If 'to' is list, yield list(MatchObject.groups()).
 
     :param prev: The previous iterator of pipe.
     :type prev: Pipe
@@ -226,19 +298,90 @@ def match(prev, pattern, *args, **kw):
     :type pattern: str|unicode
     :returns: generator
     """
-    import re
+    to = 'to' in kw and kw.pop('to')
+    pattern_obj = re.compile(pattern, *args, **kw)
 
-    pattern_object = re.compile(pattern, *args, **kw)
+    if to is dict:
+        for data in prev:
+            match = pattern_obj.match(data)
+            if match:
+                yield match.groupdict()
+    elif to is tuple:
+        for data in prev:
+            match = pattern_obj.match(data)
+            if match:
+                yield match.groups()
+    elif to is list:
+        for data in prev:
+            match = pattern_obj.match(data)
+            if match:
+                yield list(match.groups())
+    else:
+        for data in prev:
+            match = pattern_obj.match(data)
+            if match:
+                yield match
 
-    for data in prev:
-        match = pattern_object.match(data)
-        if match:
-            yield match
+
+@pipe.func
+def resplit(prev, pattern, *args, **kw):
+    """The resplit pipe split previous pipe input by regular expression.
+
+    Use 'maxsplit' keyword argument to limit the number of split.
+
+    :param prev: The previous iterator of pipe.
+    :type prev: Pipe
+    :param pattern: The pattern which used to split string.
+    :type pattern: str|unicode
+    """
+    maxsplit = 0 if 'maxsplit' not in kw else kw.pop('maxsplit')
+    pattern_obj = re.compile(pattern, *args, **kw)
+    for s in prev:
+        yield pattern_obj(s, maxsplit=maxsplit)
+
+
+@pipe.func
+def sub(prev, pattern, repl, string, *args, **kw):
+    """sub pipe is a wrapper of re.sub method.
+
+    :param prev: The previous iterator of pipe.
+    :type prev: Pipe
+    :param pattern: The pattern string.
+    :type pattern: str|unicode
+    :param repl: Check repl argument in re.sub method.
+    :type repl: str|unicode|callable
+    :param string: Check string argument in re.sub method.
+    :type string: str|unicode
+    """
+    count = 0 if 'count' not in kw else kw.pop('count')
+    pattern_obj = re.compile(pattern, *args, **kw)
+    for s in prev:
+        yield pattern_obj.sub(s, repl, string, count=count)
+
+
+@pipe.func
+def subn(prev, pattern, repl, string, *args, **kw):
+    """subn pipe is a wrapper of re.subn method.
+
+    :param prev: The previous iterator of pipe.
+    :type prev: Pipe
+    :param pattern: The pattern string.
+    :type pattern: str|unicode
+    :param repl: Check repl argument in re.sub method.
+    :type repl: str|unicode|callable
+    :param string: Check string argument in re.sub method.
+    :type string: str|unicode
+    """
+    count = 0 if 'count' not in kw else kw.pop('count')
+    pattern_obj = re.compile(pattern, *args, **kw)
+    for s in prev:
+        yield pattern_obj.subn(s, repl, string, count=count)
+        
 
 @pipe.func
 def wildcard(prev, pattern, *args, **kw):
-    """The pipe greps data passed from previous generator according to
-    given regular expression.
+    """wildcard pipe greps data passed from previous generator
+    according to given regular expression.
 
     :param prev: The previous iterator of pipe.
     :type prev: Pipe
@@ -250,19 +393,16 @@ def wildcard(prev, pattern, *args, **kw):
     """
     import fnmatch
 
-    invert = False
-    if kw.has_key('invert'):
-        invert = kw.pop('invert')
-
-    pattern_object = re.compile(fnmatch.translate(pattern), *args, **kw)
+    invert = 'invert' in kw and kw.pop('invert')
+    pattern_obj = re.compile(fnmatch.translate(pattern), *args, **kw)
 
     if not invert:
         for data in prev:
-            if pattern_object.match(data):
+            if pattern_obj.match(data):
                 yield data
     else:
         for data in prev:
-            if not pattern_object.match(data):
+            if not pattern_obj.match(data):
                 yield data
 
 
@@ -384,6 +524,69 @@ def sh(prev, *args, **kw):
         yield line
 
     process.wait()
+
+#: alias of string.upper
+upper = pipe.map(lambda s, *args, **kw: s.upper(*args, **kw))
+#: alias of string.lower
+lower = pipe.map(lambda s, *args, **kw: s.lower(*args, **kw))
+#: alias of string.capwords
+capwords = pipe.map(lambda s, *args, **kw: s.capwords(*args, **kw))
+#: alias of string.capitalize
+capitalize = pipe.map(lambda s, *args, **kw: s.capitalize(*args, **kw))
+#: alias of string.lstrip
+lstrip = pipe.map(lambda s, *args, **kw: s.lstrip(*args, **kw))
+#: alias of string.rstrip
+rstrip = pipe.map(lambda s, *args, **kw: s.rstrip(*args, **kw))
+#: alias of string.strip
+strip = pipe.map(lambda s, *args, **kw: s.strip(*args, **kw))
+#: alias of string.expandtabs
+expandtabs = pipe.map(lambda s, *args, **kw: s.expandtabs(*args, **kw))
+#: alias of string.strip
+strip = pipe.map(lambda s, *args, **kw: s.strip(*args, **kw))
+#: alias of string.find
+find = pipe.map(lambda s, *args, **kw: s.find(*args, **kw))
+#: alias of string.rfind
+rfind = pipe.map(lambda s, *args, **kw: s.rfind(*args, **kw))
+#: alias of string.count
+count = pipe.map(lambda s, *args, **kw: s.count(*args, **kw))
+#: alias of string.split
+split = pipe.map(lambda s, *args, **kw: s.split(*args, **kw))
+#: alias of string.rsplit
+rsplit = pipe.map(lambda s, *args, **kw: s.rsplit(*args, **kw))
+#: alias of string.swapcase
+swapcase = pipe.map(lambda s, *args, **kw: s.swapcase(*args, **kw))
+#: alias of string.translate
+translate = pipe.map(lambda s, *args, **kw: s.translate(*args, **kw))
+#: alias of string.ljust
+ljust = pipe.map(lambda s, *args, **kw: s.ljust(*args, **kw))
+#: alias of string.rjust
+rjust = pipe.map(lambda s, *args, **kw: s.rjust(*args, **kw))
+#: alias of string.center
+center = pipe.map(lambda s, *args, **kw: s.center(*args, **kw))
+#: alias of string.zfill
+zfill = pipe.map(lambda s, *args, **kw: s.zfill(*args, **kw))
+#: alias of string.replace
+replace = pipe.map(lambda s, *args, **kw: s.replace(*args, **kw))
+
+@pipe.func
+def join(prev, *args, **kw):
+    '''alias of string.join'''
+    yield string.join(prev, *args, **kw)
+
+@pipe.func
+def substitute(prev, *args, **kw):
+    '''alias of string.Template.substitute'''
+    template_obj = string.Template(*args, **kw)
+    for data in prev:
+        template_obj.substitute(data)
+
+@pipe.func
+def safe_substitute(prev, *args, **kw):
+    '''alias of string.Template.safe_substitute'''
+    template_obj = string.Template(*args, **kw)
+    for data in prev:
+        template_obj.safe_substitute(data)
+
 
 def register_default_types():
     """Regiser all default type-to-pipe convertors."""

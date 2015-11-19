@@ -210,8 +210,7 @@ def get_item_creator(item_type):
 
 
 class PipeFunction:
-    """A name space for decorator of Pipe functions.
-    """
+    """Collection of basic Pipe wrappers."""
     @staticmethod
     def func(generator):
         """Wrap a generator function to Pipe object.
@@ -285,8 +284,7 @@ class PipeFunction:
         """
         def wrapper(prev, *argv, **kw):
             if 'init' in kw:
-                accum_value = kw['init']
-                del kw['init']
+                accum_value = kw.pop('init')
             elif len(argv) > 0:
                 accum_value = argv[0]
                 argv = argv[1:]

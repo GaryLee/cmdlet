@@ -2,30 +2,30 @@
 
 Cmdlet provides pipe-like mechanism to cascade functions and generators. It
 uses symbol(**|**) to convert function to Pipe object and cascade them. This
-sequence of commands can be executed and evaluated later. Just like the pipe
+sequence of commands can be executed and evaluated later. Just like pipe
 mechanism in Unix shell. For example:
 
 ```python
-    from cmdlet.cmds import *
+from cmdlet.cmds import *
 
-    # Create piped commands.
-    cmds = range(10) | pipe.filter(lambda x: x > 5) | format('item#%d')
+# Create piped commands.
+cmds = range(10) | pipe.filter(lambda x: x > 5) | format('item#%d')
 
-    # Execute commands and return the last processed data.
-    run(cmds)
-    # >>> 'item#9'
+# Execute commands and return the last processed data.
+run(cmds)
+# >>> 'item#9'
 
-    # Execute commands and return processed data in a list.
-    result(cmds)
-    # >>> ['item#6', 'item#7', 'item#8', 'item#9']
+# Execute commands and return processed data in a list.
+result(cmds)
+# >>> ['item#6', 'item#7', 'item#8', 'item#9']
 
-    # Execute commands and return iterator for processed data.
-    for data in cmds:
-        print data
-    # >>> item#6
-    # >>> item#7
-    # >>> item#8
-    # >>> item#9
+# Execute commands and return iterator for processed data.
+for data in cmds:
+    print data
+# >>> item#6
+# >>> item#7
+# >>> item#8
+# >>> item#9
 
 ```
 
@@ -36,6 +36,39 @@ cmdlet can convert corresponding types to Pipe object automatically. In above
 example, range(10) is a iterator not a Pipe object. Because second item is
 a Pipe object(made by pipe.filter), it turns out first item to be converted
 to a Pipe object automatically.
+
+There are many useful utilities in cmdlet.cmds modules. They can provide a great
+convenience to build up useful pipes. Here is a example:
+
+```python
+from cmdlet.cmds import *
+
+query_topic =
+    'find ./mydoc -name "*.txt" -print' |
+    readline(end=10) |
+    match(r'^[tT]opic:\s*(?P<topic>.+)\s*', to=dict) |
+    values('topic')
+
+for topic in query_topic:
+    print topic
+```
+
+In above example, the goal is to query topic from article files. To achieve goal,
+we have to:
+
+1. Search text files in a given folder.
+2. Read first 10 lines from each file.
+3. Find the line that matched 'topc: foo bar' pattern.
+4. Extract the topic string.
+
+With the utilities provided by *cmdlet.cmds*, we only need to write a few of
+code. The first string which starts with 'find' is a normal shell script. It is
+converted to *sh* pipe automatically and executed with system shell. The
+*readline* pipe can open files whose name passed from sh pipe. *match* pipe
+and *values* pipes work together to extract topic from file content.
+
+Above example shows not only small code but also readability. It's really easy
+to understand the purpose of source code.
 
 > NOTE:
 > When using cmdlet's pipe mechanism, make sure one of your
@@ -137,6 +170,21 @@ def my_reducer(accum_result, data):
     return accum_result
 ```
 
+## pipe.stopper(function)
+
+Wrap function as a stopper. A stopper is used to stop the pipe execution. It
+returns true to stop the pipe execution. Return false to pass the data to next.
+It looks like:
+
+```python
+@pipe.stopper
+def my_stopper(data):
+    if check_stop_criteria(data):
+        return True
+    return False
+```
+
+
 ## The usage of wrapper
 
 Here is a example to show how to use function wrapper.
@@ -215,11 +263,12 @@ cmdlet.cmds supports some utilties for easy to use pipe functions.
 
 ## Pipe commnds for iterable object.
 
-TODO: describe pack, enum, counter, flatten, items, seq, attr, attrs, attrdict
+TODO: describe pack, enum, counter, flatten, items, seq, attr, attrs, attrdict,
+    breakif
 
 ## Pipe commands for file
 
-TODO: describe stdout, stder, fileobj
+TODO: describe stdout, stder, fileobj, readline
 
 ## Pipe commands for shell
 

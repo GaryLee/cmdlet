@@ -200,8 +200,8 @@ directly.
 | Type     | wrapper      | Description                                 |
 | -------- | ------------ | ------------------------------------------- |
 | type     | pipe.map     | Convert processed data to specified type    |
-| function | pipe.map     | Treat function as a mapper.                 |
-| method   | pipe.map     | Treat function as a mapper.                 |
+| function | pipe.map     | Wrap function as a mapper.                  |
+| method   | pipe.map     | Wrap method as a mapper.                    |
 | tuple    | seq          | Wrap tuple to gernator.                     |
 | list     | seq          | Wrap list to gernator.                      |
 | str      | sh           | Wrap string to command line and execute it. |
@@ -259,4 +259,4 @@ TODO: describe usage of sh
 
 ### String split, search and match
 
-TODO: desribe grep, match, wildcard, resplit, sub, subn
+TODO: describe grep, match, wildcard, resplit, sub, subn

@@ -14,7 +14,7 @@ def test_sh_input():
     test_vector = ['this', 'is', 'a', 'shell', 'input', 'output', 'test', '!!']
     cmd=r'''python -c "from sys import stdout; [stdout.write('%%s\n' %% raw_input().upper()) for x in range(%d)]" ''' % len(test_vector)
 
-    result_list = result(test_vector | sh(cmd) | strip)
+    result_list = result(test_vector | sh(cmd))
     for i, item in enumerate(test_vector):
         assert item.upper() == result_list[i]
 
@@ -34,5 +34,5 @@ def test_sh_output():
     else:
         list_file_cmd = '/bin/ls'
 
-    file_list = result(list_file_cmd | wildcard('*.py*') | strip | lower)
+    file_list = result(list_file_cmd | wildcard('*.py') | strip | lower)
     assert path.basename(__file__).lower() in file_list

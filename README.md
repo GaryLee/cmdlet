@@ -65,7 +65,7 @@ With the utilities provided by *cmdlet.cmds*, we only need to write a few of
 code. The first string which starts with 'find' is a normal shell script. It is
 converted to *sh* pipe automatically and executed with system shell. The
 *readline* pipe can open files whose name passed from sh pipe. *match* pipe
-and *values* pipes work together to extract topic from file content.
+and *values* pipe work together to extract topic from file content.
 
 Above example shows not only small code but also readability. It's really easy
 to understand the purpose of source code.
@@ -73,6 +73,27 @@ to understand the purpose of source code.
 > NOTE:
 > When using cmdlet's pipe mechanism, make sure one of your
 > **first two pipe items** is a valid Pipe object.
+
+There is another advantage to use cmdlet. The pipe object is evaluated when
+calling result, run or iter. It implies you can reuse them. Let's modify
+previous example.
+
+```python
+from cmdlet.cmds import *
+
+# Separate from query_topic command.
+extract_topic =
+    readline(end=10) |
+    match(r'^[tT]opic:\s*(?P<topic>.+)\s*', to=dict) |
+    values('topic')
+
+for topic in ('find ./mydoc1 -name "*.txt" -print' | extract_topic):
+    print topic
+
+for topic in ('find ../mydoc2 -name "*.md" -print' | extract_topic):
+    print topic
+
+```
 
 
 # Run piped commands and get result
@@ -122,6 +143,27 @@ def my_generator_ignore_prev(prev):
         yield data
 ```
 
+For example:
+```python
+@pipe.func
+def randint_generator(prev, num):
+    for i in range(num):
+        yield random.randint(0, 1000)
+
+@pipe.func
+def power(prev, th):
+    for n in prev:
+        yield n ** th
+
+cmds = randint_generator(10) | power
+ans = result(cmds)
+# Equals to:
+# ans = []
+# for i in range(10):
+#     ans.append(random.randint(0, 1000)
+```
+
+
 ## pipe.map(function)
 
 Wrap function to a mapper. The input is a normal function with at least one
@@ -133,6 +175,30 @@ Pipe object. It looks like:
 def my_mapper(data):
     # ... Put some code to process data ...            
     return new_data
+```
+
+For example:
+```python
+@pipe.func
+def randint_generator(prev, num):
+    for i in range(num):
+        yield random.randint(0, 1000)
+
+@pipe.map
+def power(n, th):
+    return n ** th
+
+cmds = randint_generator(10) | power
+ans = result(cmds)
+# Equals to:
+# ans = []
+# for i in range(10):
+#     ans.append(random.randint(0, 1000)
+```
+
+The power pipe can also be written in this way:
+```python
+power = pipe.map(lambda n, th: n ** th)
 ```
 
 Anything returned by mapper will be sent to next Pipe object. If mapper return
@@ -156,6 +222,27 @@ def my_filter(data):
         return True
 ```
 
+For example:
+```python
+@pipe.filter
+def less_than(data, thrd):
+    return data < thrd
+
+cmds = range(10) | less_than(3)
+ans = result(cmds)
+# Equals to:
+# ans = []
+# thrd = 3
+# for n in range(10):
+#     if n < thrd:
+#          ans.append()
+```
+
+You can write filter pipe in this way:
+```python
+less_than = pipe.filter(lambda data, thrd: data < thrd)
+```
+
 ## pipe.reduce(function)
 
 Wrap function as a reducer. A reducer is a function which has at least two
@@ -168,6 +255,18 @@ specify initial value to accumulated result. It looks like:
 def my_reducer(accum_result, data):
     # Calculate new accum_result according to data.
     return accum_result
+```
+
+For example:
+```python
+@pipe.reduce
+def count_mod(accum_result, data, mod_by):
+    if (data % mod_by) == 0:
+        return accum_result
+    else:
+        return accum_result + 1
+
+cmds = range(1000) | count_mod(10, init=0)
 ```
 
 ## pipe.stopper(function)

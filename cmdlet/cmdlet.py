@@ -283,7 +283,7 @@ class PipeFunction:
         :returns: Pipe object
         """
         def wrapper(prev, *argv, **kw):
-            accum_value = None if 'init' not in kw else kw['init']
+            accum_value = None if 'init' not in kw else kw.pop('init')
             if prev is None:
                 raise TypeError('A reducer must have input.')
             for i in prev:

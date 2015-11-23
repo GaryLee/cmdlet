@@ -279,17 +279,11 @@ class PipeFunction:
         :param func: The filter function to be wrapped.
         :type func: function object
         :param args: The default arguments to be used for filter function.
-        :param kw:  The default keyword arguments to be used for filter function.
+        :param kw: The default keyword arguments to be used for filter function.
         :returns: Pipe object
         """
         def wrapper(prev, *argv, **kw):
-            if 'init' in kw:
-                accum_value = kw.pop('init')
-            elif len(argv) > 0:
-                accum_value = argv[0]
-                argv = argv[1:]
-            else:
-                accum_value = None
+            accum_value = None if 'init' not in kw else kw['init']
             if prev is None:
                 raise TypeError('A reducer must have input.')
             for i in prev:
@@ -305,7 +299,7 @@ class PipeFunction:
         wrapped function should return boolean value. The cascading pipe will
         stop the execution if wrapped function return True.
 
-        Stopper is useful if you have unlimited number of input data. 
+        Stopper is useful if you have unlimited number of input data.
 
         :param func: The conditoinal function to be wrapped.
         :type func: function object

@@ -1,4 +1,5 @@
 #!python
+# coding: utf-8
 
 def test_sh_input():
     import sys

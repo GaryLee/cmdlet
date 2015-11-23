@@ -1,4 +1,5 @@
 #!python
+# coding: utf-8
 
 def test_cmdlet_import():
     import sys
@@ -36,3 +37,4 @@ def test_cmds_import():
     import_names = dir(cmds)
     for name in match_names:
         assert name in import_names
+

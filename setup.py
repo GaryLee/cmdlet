@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 version = '0.2'
-stage = '-alpha'
+stage = ''
 
 setup(
   name = 'cmdlet',

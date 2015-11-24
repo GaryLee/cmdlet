@@ -358,20 +358,37 @@ directly.
 
 # cmdlet.cmds utilities.
 
-cmdlet.cmds supports some utilties for easy to use pipe functions.
+cmdlet.cmds has predefined some commands. Here are brief descriptions.
 
 ## Pipe commnds for iterable object.
 
-TODO: describe pack, enum, counter, flatten, items, seq, attr, attrs, attrdict,
-    breakif
+| Command  | Description                                                |
+| -------- | ---------------------------------------------------------- |
+| pack     | Take N elements from pipe and group them into one element. |
+| enum     | Generate (index, value) pair from previous pipe.           |
+| counter  | Count the number of data from previous pipe.               |
+| flatten  | Flatten the data passed from previous pipe.                |
+| items    | Extract (key, value) pair from a dict-like object.         |
+| seq      | Extract any iterable object.                               |
+| attr     | Extract the value of given attribute from previous pipe.   |
+| attrs    | Extract the value of given attributes from previous pipe.  |
+| attrdict | Extract the value of given attributes from previous pipe.  |
 
 ## Pipe commands for file
 
-TODO: describe stdout, stder, fileobj, readline
+| Command  | Description                                                |
+| -------- | ---------------------------------------------------------- |
+| stdout   | Output data from previous pipe to stdout.                  |
+| stderr   | Output data from previous pipe to stderr.                  |
+| readline | Read data from file line by line.                          |
+| fileobj  | Read/write file with pipe data.                            |
 
 ## Pipe commands for shell
 
-TODO: describe usage of sh
+| Command  | Description                                                |
+| -------- | ---------------------------------------------------------- |
+| sh       | Execute system shell script to handle the stdin/stdout.    |
+
 
 ## Pipe commands for strings
 
@@ -407,4 +424,11 @@ TODO: describe usage of sh
 
 ### String split, search and match
 
-TODO: describe grep, match, wildcard, resplit, sub, subn
+| Command  | Description                                                    |
+| -------- | -------------------------------------------------------------- |
+| grep     | Grep strings with regular expression.                          |
+| match    | Grep strings with regular expression and generate MatchObject. |
+| wildcard | Grep strings with wildcard character.                          |
+| resplit  | Split strings with regular expression.                         |
+| sub      | Substitute strings with regular expression.                    |
+| subn     | Substitute strings with regular expression.                    |

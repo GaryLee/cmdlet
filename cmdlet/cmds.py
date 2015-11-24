@@ -85,6 +85,7 @@ def attr(prev, attr_name):
         if hasattr(obj, attr_name):
             yield getattr(obj, attr_name)
 
+
 @pipe.func
 def attrs(prev, attr_names):
     """attrs pipe can extract attribute values of object.
@@ -104,6 +105,7 @@ def attrs(prev, attr_names):
             if hasattr(obj, name):
                 attr_values.append(getattr(obj, name))
         yield attr_values
+
 
 @pipe.func
 def attrdict(prev, attr_names):
@@ -471,18 +473,20 @@ def readline(prev, filename=None, mode='r', trim=string.rstrip, start=1, end=sys
     """This pipe get filenames or file object from previous pipe and read the
     content of file. Then, send the content of file line by line to next pipe.
 
-    if maxlines is specified, only
+    The start and end parameters are used to limit the range of reading from file.
 
     :param prev: The previous iterator of pipe.
     :type prev: Pipe
+    :param filename: The files to be read. If None, use previous pipe input as filenames.
+    :type filename: None|str|unicode|list|tuple
     :param mode: The mode to open file. default is 'r'
     :type mode: str
     :param trim: The function to trim the line before send to next pipe.
     :type trim: function object.
-    :param maxlines: The maximum line number to read.
-    :type maxlines: integer
     :param start: if star is specified, only line number larger or equal to start will be sent.
     :type start: integer
+    :param end: The last line number to read.
+    :type end: integer
     :returns: generator
     """
     if prev is None:
@@ -517,7 +521,7 @@ def readline(prev, filename=None, mode='r', trim=string.rstrip, start=1, end=sys
                 fd.close()
 
 @pipe.func
-def fileobj(prev, file_handle, endl='\n', thru=False):
+def fileobj(prev, file_handle, endl='', thru=False):
     """This pipe read/write data from/to file object which specified by
     file_handle.
 

@@ -177,8 +177,6 @@ def values(prev, *keys, **kw):
 
     :param prev: The previous iterator of pipe.
     :type prev: Pipe
-    :param depth: The deepest nested level to be extracted. 0 means no extraction.
-    :type depth: integer
     :returns: generator
     """
     d = prev.next()
@@ -186,12 +184,10 @@ def values(prev, *keys, **kw):
         yield [d[k] for k in keys if d.has_key(k)]
         for d in prev:
             yield [d[k] for k in keys if d.has_key(k)]
-    elif isinstance(d, (types.ListType, types.TupleType)):
+    else:
         yield [d[i] for i in keys if 0 <= i < len(d)]
         for d in prev:
             yield [d[i] for i in keys if 0 <= i < len(d)]
-    else:
-        raise Exception('values pipe only allows dict, list or tuple.')
 
 @pipe.func
 def counter(prev):
@@ -229,24 +225,29 @@ def enum(prev, start=0):
 
 
 @pipe.func
-def pack(prev, n, **kw):
+def pack(prev, n, rest=False, **kw):
     """pack pipe takes n elements from previous generator and yield one
     list to next.
 
     :param prev: The previous iterator of pipe.
     :type prev: Pipe
-    :param rest: The previous iterator of pipe.
-    :type prev: Pipe
+    :param rest: Set True to allow to output the rest part of last elements.
+    :type prev: boolean
+    :param padding: Specify the padding element for the rest part of last elements.
+    :type prev: boolean
     :returns: generator
 
     :Example:
     >>> result([1,2,3,4,5,6,7] | pack(3))
-    [(1, 2, 3), (4, 5, 6)]
+    [[1, 2, 3], [4, 5, 6]]
 
-    .. note:: The last odd element will be dropped.
+    >>> result([1,2,3,4,5,6,7] | pack(3, rest=True))
+    [[1, 2, 3], [4, 5, 6], [7,]]
+
+    >>> result([1,2,3,4,5,6,7] | pack(3, padding=None))
+    [[1, 2, 3], [4, 5, 6], [7, None, None]]
     """
 
-    rest = kw.setdefault('rest', False)
     if kw.has_key('padding'):
         use_padding = True
         padding = kw['padding']
@@ -262,7 +263,7 @@ def pack(prev, n, **kw):
             items = []
     if len(items) != 0 and rest:
         if use_padding:
-            items.extend([padding, ] * (n - i))
+            items.extend([padding, ] * (n - (i % n)))
         yield items
 
 
@@ -291,21 +292,18 @@ def grep(prev, pattern, *args, **kw):
     :type prev: Pipe
     :param pattern: The pattern which used to filter out data.
     :type pattern: str|unicode|re pattern object
-    :param invert: If true, invert the match condition.
-    :type invert: boolean
+    :param inv: If true, invert the match condition.
+    :type inv: boolean
+    :param kw:
+    :type kw: dict
     :returns: generator
     """
-    invert = 'invert' in kw and kw.pop('invert')
+    inv = 'inv' in kw and kw.pop('inv')
     pattern_obj = re.compile(pattern, *args, **kw)
 
-    if not invert:
-        for data in prev:
-            if pattern_obj.match(data):
-                yield data
-    else:
-        for data in prev:
-            if not pattern_obj.match(data):
-                yield data
+    for data in prev:
+        if bool(inv) ^ (pattern_obj.match(data) is not None):
+            yield data
 
 @pipe.func
 def match(prev, pattern, *args, **kw):
@@ -324,6 +322,8 @@ def match(prev, pattern, *args, **kw):
     :type prev: Pipe
     :param pattern: The pattern which used to filter data.
     :type pattern: str|unicode
+    :param to: What data type the result should be stored. dict|tuple|list
+    :type to: type
     :returns: generator
     """
     to = 'to' in kw and kw.pop('to')
@@ -332,22 +332,22 @@ def match(prev, pattern, *args, **kw):
     if to is dict:
         for data in prev:
             match = pattern_obj.match(data)
-            if match:
+            if match is not None:
                 yield match.groupdict()
     elif to is tuple:
         for data in prev:
             match = pattern_obj.match(data)
-            if match:
+            if match is not None:
                 yield match.groups()
     elif to is list:
         for data in prev:
             match = pattern_obj.match(data)
-            if match:
+            if match is not None:
                 yield list(match.groups())
     else:
         for data in prev:
             match = pattern_obj.match(data)
-            if match:
+            if match is not None:
                 yield match
 
 
@@ -365,11 +365,11 @@ def resplit(prev, pattern, *args, **kw):
     maxsplit = 0 if 'maxsplit' not in kw else kw.pop('maxsplit')
     pattern_obj = re.compile(pattern, *args, **kw)
     for s in prev:
-        yield pattern_obj(s, maxsplit=maxsplit)
+        yield pattern_obj.split(s, maxsplit=maxsplit)
 
 
 @pipe.func
-def sub(prev, pattern, repl, string, *args, **kw):
+def sub(prev, pattern, repl, *args, **kw):
     """sub pipe is a wrapper of re.sub method.
 
     :param prev: The previous iterator of pipe.
@@ -378,17 +378,15 @@ def sub(prev, pattern, repl, string, *args, **kw):
     :type pattern: str|unicode
     :param repl: Check repl argument in re.sub method.
     :type repl: str|unicode|callable
-    :param string: Check string argument in re.sub method.
-    :type string: str|unicode
     """
     count = 0 if 'count' not in kw else kw.pop('count')
     pattern_obj = re.compile(pattern, *args, **kw)
     for s in prev:
-        yield pattern_obj.sub(s, repl, string, count=count)
+        yield pattern_obj.sub(repl, s, count=count)
 
 
 @pipe.func
-def subn(prev, pattern, repl, string, *args, **kw):
+def subn(prev, pattern, repl, *args, **kw):
     """subn pipe is a wrapper of re.subn method.
 
     :param prev: The previous iterator of pipe.
@@ -397,13 +395,11 @@ def subn(prev, pattern, repl, string, *args, **kw):
     :type pattern: str|unicode
     :param repl: Check repl argument in re.sub method.
     :type repl: str|unicode|callable
-    :param string: Check string argument in re.sub method.
-    :type string: str|unicode
     """
     count = 0 if 'count' not in kw else kw.pop('count')
     pattern_obj = re.compile(pattern, *args, **kw)
     for s in prev:
-        yield pattern_obj.subn(s, repl, string, count=count)
+        yield pattern_obj.subn(repl, s, count=count)
 
 
 @pipe.func
@@ -415,16 +411,16 @@ def wildcard(prev, pattern, *args, **kw):
     :type prev: Pipe
     :param pattern: The wildcard string which used to filter data.
     :type pattern: str|unicode|re pattern object
-    :param invert: If true, invert the match condition.
-    :type invert: boolean
+    :param inv: If true, invert the match condition.
+    :type inv: boolean
     :returns: generator
     """
     import fnmatch
 
-    invert = 'invert' in kw and kw.pop('invert')
+    inv = 'inv' in kw and kw.pop('inv')
     pattern_obj = re.compile(fnmatch.translate(pattern), *args, **kw)
 
-    if not invert:
+    if not inv:
         for data in prev:
             if pattern_obj.match(data):
                 yield data
@@ -435,7 +431,7 @@ def wildcard(prev, pattern, *args, **kw):
 
 
 @pipe.func
-def stdout(prev, endl='', thru=True):
+def stdout(prev, endl='', thru=False):
     """This pipe read data from previous iterator and write it to stdout.
 
     :param prev: The previous iterator of pipe.
@@ -448,17 +444,12 @@ def stdout(prev, endl='', thru=True):
     :returns: generator
     """
     for i in prev:
-        sys.stdout.write(str(i))
-        if endl:
-            sys.stdout.write(endl)
+        sys.stdout.write(str(i) + endl)
         if thru:
             yield i
-        else:
-            yield
-
 
 @pipe.func
-def stderr(prev, endl='', thru=True):
+def stderr(prev, endl='', thru=False):
     """This pipe read data from previous iterator and write it to stderr.
 
     :param prev: The previous iterator of pipe.
@@ -471,17 +462,12 @@ def stderr(prev, endl='', thru=True):
     :returns: generator
     """
     for i in prev:
-        sys.stderr.write(str(i))
-        if endl:
-            sys.stderr.write(endl)
-
+        sys.stderr.write(str(i) + endl)
         if thru:
             yield i
-        else:
-            yield
 
 @pipe.func
-def readline(prev, mode='r', trim=string.rstrip, start=0, end=sys.maxsize, index=False):
+def readline(prev, filename=None, mode='r', trim=string.rstrip, start=1, end=sys.maxsize):
     """This pipe get filenames or file object from previous pipe and read the
     content of file. Then, send the content of file line by line to next pipe.
 
@@ -497,31 +483,41 @@ def readline(prev, mode='r', trim=string.rstrip, start=0, end=sys.maxsize, index
     :type maxlines: integer
     :param start: if star is specified, only line number larger or equal to start will be sent.
     :type start: integer
-    :param index: if True, ouput becomes (line_no, line_content)
-    :type index: boolean
     :returns: generator
     """
-    for filename in prev:
-        if isinstance(filename, types.FileType):
-            fd = filename
+    if prev is None:
+        if filename is None:
+            raise Exception('No input available for readline.')
+        elif isinstance(filename, (types.StringType, types.UnicodeType)):
+            file_list = [filename, ]
         else:
-            fd = file(filename, mode)
+            file_list = filename
+    else:
+        file_list = prev
+
+    for fn in file_list:
+        if isinstance(fn, types.FileType):
+            fd = fn
+        else:
+            fd = file(fn, mode)
+
         try:
-            for line_no, line in enumerate(fd, 1):
-                if line_no < start:
-                    continue
-                if index:
-                    yield (line_no, trim(line))
-                else:
+            if start <= 1 and end == sys.maxsize:
+                for line in fd:
                     yield trim(line)
-                if line_no >= end:
-                    break
+            else:
+                for line_no, line in enumerate(fd, 1):
+                    if line_no < start:
+                        continue
+                    yield trim(line)
+                    if line_no >= end:
+                        break
         finally:
-            if fd != filename:
+            if fd != fn:
                 fd.close()
 
 @pipe.func
-def fileobj(prev, file_handle, endl='', thru=True):
+def fileobj(prev, file_handle, endl='\n', thru=False):
     """This pipe read/write data from/to file object which specified by
     file_handle.
 
@@ -538,14 +534,9 @@ def fileobj(prev, file_handle, endl='', thru=True):
     """
     if prev is not None:
         for i in prev:
-            file_handle.write(str(i))
-            if endl:
-                file_handle.write(endl)
-
+            file_handle.write(str(i)+endl)
             if thru:
                 yield i
-            else:
-                yield
     else:
         for data in file_handle:
             yield data
@@ -666,23 +657,23 @@ zfill = pipe.map(lambda s, *args, **kw: s.zfill(*args, **kw))
 replace = pipe.map(lambda s, *args, **kw: s.replace(*args, **kw))
 
 @pipe.func
-def join(prev, *args, **kw):
+def join(prev, sep, *args, **kw):
     '''alias of string.join'''
-    yield string.join(prev, *args, **kw)
+    yield sep.join(prev, *args, **kw)
 
 @pipe.func
 def substitute(prev, *args, **kw):
     '''alias of string.Template.substitute'''
     template_obj = string.Template(*args, **kw)
     for data in prev:
-        template_obj.substitute(data)
+        yield template_obj.substitute(data)
 
 @pipe.func
 def safe_substitute(prev, *args, **kw):
     '''alias of string.Template.safe_substitute'''
     template_obj = string.Template(*args, **kw)
     for data in prev:
-        template_obj.safe_substitute(data)
+        yield template_obj.safe_substitute(data)
 
 
 def register_default_types():

@@ -70,7 +70,7 @@ and *values* pipe work together to extract topic from file content.
 Above example shows not only small code but also readability. It's really easy
 to understand the purpose of source code.
 
-> NOTE:
+NOTE:
 > When using cmdlet's pipe mechanism, make sure one of your
 > **first two pipe items** is a valid Pipe object.
 
@@ -326,7 +326,7 @@ count = pipe.reduce(lambda accum_result, data: accum_result + 1)
 format_output = pipe.reduce(lambda data, format: format % data)
 ```
 
-> NOTE:
+NOTE:
 > As you might already noticed, the number of argument using in piped commands
 > is different from the definition of wrapped function. You should know your
 > function is wrapped to a Pipe object. The function is not invoked when

@@ -37,3 +37,28 @@ def test_sh_output():
 
     file_list = result(list_file_cmd | wildcard('*.py') | strip | lower)
     assert path.basename(__file__).lower() in file_list
+
+def test_sh_without_cmd():
+    import sys
+    import platform
+    from os import path
+    if '../' not in sys.path:
+        sys.path.insert(0, '../')
+
+    from cmdlet.cmds import *
+    cmd1 = range(30) | sh
+    for i, v in enumerate(cmd1):
+        assert i == v
+
+    @pipe.func
+    def stop_if_large_than(prev, thrd, init=0):
+        count = init
+        for i in prev:
+            count += 1
+            yield count
+            if count >= thrd:
+                break
+
+    cmd2 = sh | stop_if_large_than(10)
+    s = cmd2.run()
+    assert s == 10

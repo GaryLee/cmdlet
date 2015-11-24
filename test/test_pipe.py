@@ -128,7 +128,7 @@ def test_pipe_reduce():
 
     test_num = 100
     test_list = list(range(test_num))
-    cmd2 = test_list | count_mod_10(0)
+    cmd2 = test_list | count_mod_10(init=0)
 
     ans = cmd2.run()
     assert ans == (test_num // 10)
@@ -139,13 +139,32 @@ def test_pipe_reduce():
     except TypeError as e:
         assert e.message == 'A reducer must have input.'
 
+def test_pipe_stopper():
+    register_default_types()
+
+    @pipe.stopper
+    def stop_if_count_larger_than(data, thrd=sys.maxsize):
+        return data > thrd
+
+    test_num = 100
+    test_list = list(range(test_num))
+    stop_thrd = 20
+    cmd1 = test_list | stop_if_count_larger_than(thrd=stop_thrd)
+    ans = cmd1.run()
+    assert ans == stop_thrd
+
+    cmd2 = stop_if_count_larger_than | str
+    try:
+        cmd2.run()
+    except TypeError as e:
+        assert e.message == 'A stopper must have input.'
 
 def test_pipe_chain():
     import string
     register_default_types()
 
     @pipe.reduce
-    def count(accu, data):
+    def count(accu, data, **kw):
         return accu + 1
 
     @pipe.filter

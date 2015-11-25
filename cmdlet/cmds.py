@@ -7,15 +7,33 @@ by cmdlet.
 
 import sys
 import os
+import io
 import re
 import types
 import subprocess
 import string
-from StringIO import StringIO
 from cmdlet import Pipe, PipeFunction, register_type, unregister_type
+
+is_py3 = sys.version_info >= (3, 0)
+
+if is_py3:
+    from io import StringIO
+else:
+    from StringIO import StringIO
 
 #: Alias of cmdlet.PipeFuncion.
 pipe = PipeFunction
+
+#: data type of file for different python version.
+file_type = io.IOBase if is_py3 else file
+#: data type of string for different python version.
+string_type = bytes if is_py3 else str
+#: data type of unicode for different python version.
+unicode_type = str if is_py3 else unicode
+
+#: Check if is string or unicode
+is_str_type = lambda x: isinstance(x, (string_type, unicode_type))
+
 
 def run(cmd):
     """Run pipe object and return its last result.
@@ -125,7 +143,7 @@ def attrdict(prev, attr_names):
     :type attr_names: str of list or dict
     :returns: generator
     """
-    if isinstance(attr_names, types.DictionaryType):
+    if isinstance(attr_names, dict):
         for obj in prev:
             attr_values = dict()
             for name in attr_names.keys():
@@ -181,11 +199,11 @@ def values(prev, *keys, **kw):
     :type prev: Pipe
     :returns: generator
     """
-    d = prev.next()
-    if isinstance(d, types.DictionaryType):
-        yield [d[k] for k in keys if d.has_key(k)]
+    d = next(prev)
+    if isinstance(d, dict):
+        yield [d[k] for k in keys if k in d]
         for d in prev:
-            yield [d[k] for k in keys if d.has_key(k)]
+            yield [d[k] for k in keys if k in d]
     else:
         yield [d[i] for i in keys if 0 <= i < len(d)]
         for d in prev:
@@ -250,7 +268,7 @@ def pack(prev, n, rest=False, **kw):
     [[1, 2, 3], [4, 5, 6], [7, None, None]]
     """
 
-    if kw.has_key('padding'):
+    if 'padding' in kw:
         use_padding = True
         padding = kw['padding']
     else:
@@ -300,11 +318,11 @@ def grep(prev, pattern, *args, **kw):
     :type kw: dict
     :returns: generator
     """
-    inv = 'inv' in kw and kw.pop('inv')
+    inv = False if 'inv' not in kw else kw.pop('inv')
     pattern_obj = re.compile(pattern, *args, **kw)
 
     for data in prev:
-        if bool(inv) ^ (pattern_obj.match(data) is not None):
+        if bool(inv) ^ bool(pattern_obj.match(data)):
             yield data
 
 @pipe.func
@@ -469,7 +487,7 @@ def stderr(prev, endl='', thru=False):
             yield i
 
 @pipe.func
-def readline(prev, filename=None, mode='r', trim=string.rstrip, start=1, end=sys.maxsize):
+def readline(prev, filename=None, mode='r', trim=str.rstrip, start=1, end=sys.maxsize):
     """This pipe get filenames or file object from previous pipe and read the
     content of file. Then, send the content of file line by line to next pipe.
 
@@ -492,7 +510,7 @@ def readline(prev, filename=None, mode='r', trim=string.rstrip, start=1, end=sys
     if prev is None:
         if filename is None:
             raise Exception('No input available for readline.')
-        elif isinstance(filename, (types.StringType, types.UnicodeType)):
+        elif is_str_type(filename):
             file_list = [filename, ]
         else:
             file_list = filename
@@ -500,7 +518,7 @@ def readline(prev, filename=None, mode='r', trim=string.rstrip, start=1, end=sys
         file_list = prev
 
     for fn in file_list:
-        if isinstance(fn, types.FileType):
+        if isinstance(fn, file_type):
             fd = fn
         else:
             fd = open(fn, mode)
@@ -553,7 +571,7 @@ def sh(prev, *args, **kw):
 
     A optional keyword argument 'trim' can pass a function into sh pipe. It is
     used to trim the output from shell process. The default trim function is
-    string.rstrip. Therefore, any space characters in tail of
+    str.rstrip. Therefore, any space characters in tail of
     shell process output line will be removed.
 
     For example:
@@ -568,6 +586,11 @@ def sh(prev, *args, **kw):
     :type kw: dictionary of options.
     :returns: generator
     """
+    endl = '\n' if 'endl' not in kw else kw.pop('endl')
+    trim = None if 'trim' not in kw else kw.pop('trim')
+    if trim is None:
+        trim = bytes.rstrip if is_py3 else str.rstrip
+
     cmdline = ' '.join(args)
     if not cmdline:
         if prev is not None:
@@ -577,20 +600,19 @@ def sh(prev, *args, **kw):
             while True:
                 yield None
 
-    trim = string.rstrip if 'trim' not in kw else kw['trim']
-
     process = subprocess.Popen(cmdline, shell=True,
         stdin=subprocess.PIPE, stdout=subprocess.PIPE,
         **kw)
-    endl = kw.setdefault('endl', '\n')
     if prev is not None:
         stdin_buffer = StringIO()
         for i in prev:
             stdin_buffer.write(i)
             if endl:
                 stdin_buffer.write(endl)
-
-        process.stdin.write(stdin_buffer.getvalue())
+        if is_py3:
+            process.stdin.write(stdin_buffer.getvalue().encode('utf-8'))
+        else:
+            process.stdin.write(stdin_buffer.getvalue())
         process.stdin.flush()
         process.stdin.close()
         stdin_buffer.close()
@@ -617,52 +639,52 @@ def walk(prev, inital_path, *args, **kw):
             yield os.path.join(dir_path, filename)
 
 
-#: alias of string.upper
+#: alias of str.upper
 upper = pipe.map(lambda s, *args, **kw: s.upper(*args, **kw))
-#: alias of string.lower
+#: alias of str.lower
 lower = pipe.map(lambda s, *args, **kw: s.lower(*args, **kw))
-#: alias of string.capwords
+#: alias of str.capwords
 capwords = pipe.map(lambda s, *args, **kw: s.capwords(*args, **kw))
-#: alias of string.capitalize
+#: alias of str.capitalize
 capitalize = pipe.map(lambda s, *args, **kw: s.capitalize(*args, **kw))
-#: alias of string.lstrip
+#: alias of str.lstrip
 lstrip = pipe.map(lambda s, *args, **kw: s.lstrip(*args, **kw))
-#: alias of string.rstrip
+#: alias of str.rstrip
 rstrip = pipe.map(lambda s, *args, **kw: s.rstrip(*args, **kw))
-#: alias of string.strip
+#: alias of str.strip
 strip = pipe.map(lambda s, *args, **kw: s.strip(*args, **kw))
-#: alias of string.expandtabs
+#: alias of str.expandtabs
 expandtabs = pipe.map(lambda s, *args, **kw: s.expandtabs(*args, **kw))
-#: alias of string.strip
+#: alias of str.strip
 strip = pipe.map(lambda s, *args, **kw: s.strip(*args, **kw))
-#: alias of string.find
+#: alias of str.find
 find = pipe.map(lambda s, *args, **kw: s.find(*args, **kw))
-#: alias of string.rfind
+#: alias of str.rfind
 rfind = pipe.map(lambda s, *args, **kw: s.rfind(*args, **kw))
-#: alias of string.count
+#: alias of str.count
 count = pipe.map(lambda s, *args, **kw: s.count(*args, **kw))
-#: alias of string.split
+#: alias of str.split
 split = pipe.map(lambda s, *args, **kw: s.split(*args, **kw))
-#: alias of string.rsplit
+#: alias of str.rsplit
 rsplit = pipe.map(lambda s, *args, **kw: s.rsplit(*args, **kw))
-#: alias of string.swapcase
+#: alias of str.swapcase
 swapcase = pipe.map(lambda s, *args, **kw: s.swapcase(*args, **kw))
-#: alias of string.translate
+#: alias of str.translate
 translate = pipe.map(lambda s, *args, **kw: s.translate(*args, **kw))
-#: alias of string.ljust
+#: alias of str.ljust
 ljust = pipe.map(lambda s, *args, **kw: s.ljust(*args, **kw))
-#: alias of string.rjust
+#: alias of str.rjust
 rjust = pipe.map(lambda s, *args, **kw: s.rjust(*args, **kw))
-#: alias of string.center
+#: alias of str.center
 center = pipe.map(lambda s, *args, **kw: s.center(*args, **kw))
-#: alias of string.zfill
+#: alias of str.zfill
 zfill = pipe.map(lambda s, *args, **kw: s.zfill(*args, **kw))
-#: alias of string.replace
+#: alias of str.replace
 replace = pipe.map(lambda s, *args, **kw: s.replace(*args, **kw))
 
 @pipe.func
 def join(prev, sep, *args, **kw):
-    '''alias of string.join'''
+    '''alias of str.join'''
     yield sep.join(prev, *args, **kw)
 
 @pipe.func
@@ -679,17 +701,40 @@ def safe_substitute(prev, *args, **kw):
     for data in prev:
         yield template_obj.safe_substitute(data)
 
+@pipe.func
+def to_str(prev, encoding=None):
+    """Convert data from previous pipe with specified encoding."""
+    first = next(prev)
+    if isinstance(first, str):
+        if encoding is None:
+            yield first
+            for s in prev:
+                yield s
+        else:
+            yield first.encode(encoding)
+            for s in prev:
+                yield s.encode(encoding)
+    else:
+        if encoding is None:
+            encoding = sys.stdout.encoding or 'utf-8'
+        yield first.decode(encoding)
+        for s in prev:
+            yield s.decode(encoding)
 
 def register_default_types():
     """Regiser all default type-to-pipe convertors."""
-    register_type(types.TypeType, pipe.map)
+    register_type(type, pipe.map)
     register_type(types.FunctionType, pipe.map)
     register_type(types.MethodType, pipe.map)
-    register_type(types.TupleType, seq)
-    register_type(types.ListType, seq)
+    register_type(tuple, seq)
+    register_type(list, seq)
     register_type(types.GeneratorType, seq)
-    register_type(types.StringType, sh)
-    register_type(types.UnicodeType, sh)
-    register_type(types.FileType, fileobj)
+    register_type(string_type, sh)
+    register_type(unicode_type, sh)
+    register_type(file_type, fileobj)
+
+    if is_py3:
+        register_type(range, seq)
+        register_type(map, seq)
 
 register_default_types()

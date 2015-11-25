@@ -179,7 +179,7 @@ def unregister_type(item_type):
 
     :param item_type: The type of data object which used in pipe cascading.
     """
-    if not Pipe.pipe_item_types.has_key(item_type):
+    if item_type not in Pipe.pipe_item_types:
         return
     del Pipe.pipe_item_types[item_type]
 
@@ -194,7 +194,7 @@ def has_registered_type(item_type):
     :returns: True: The item_type is registered. False: The item_type is not registered.
     :rtype: bool
     """
-    return Pipe.pipe_item_types.has_key(item_type)
+    return item_type in Pipe.pipe_item_types
 
 def get_item_creator(item_type):
     """Get item creator according registered item type.
@@ -203,7 +203,10 @@ def get_item_creator(item_type):
     :type item_type: types.TypeType.
     :returns: Creator function. None if type not found.
     """
-    if not Pipe.pipe_item_types.has_key(item_type):
+    if item_type not in Pipe.pipe_item_types:
+        for registered_type in Pipe.pipe_item_types:
+            if issubclass(item_type, registered_type):
+                return Pipe.pipe_item_types[registered_type]
         return None
     else:
         return Pipe.pipe_item_types[item_type]

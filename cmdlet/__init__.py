@@ -11,12 +11,13 @@ generator to Pipe object. Check cmdlet.cmd module for its applications.
 
 """
 
-from cmdlet import *
-import cmds
+from __future__ import absolute_import
+from .cmdlet import *
+from . import cmds
 
 __license__ = "MIT"
 __author__ = "Gary Lee <garywlee@gmail.com>"
-__version__ = "0.2.2"
+__version__ = "0.3.0"
 __docformat__ = "reStructuredText"
 
 __all__ = [

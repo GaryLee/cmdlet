@@ -190,12 +190,13 @@ def test_pack_cmd():
 
 
 def test_grep_cmd():
-    zen_of_python_uppercase = map(string.upper, zen_of_python)
+    zen_of_python_uppercase = list(map(str.upper, zen_of_python))
 
     def grep_and_merge(pattern, texts, inv=False):
         results = []
         for text in texts:
-            if (not inv and pattern.match(text)) or (inv and not pattern.match(text)):
+            match = pattern.match(text)
+            if (not inv and match) or (inv and not match):
                 results.append(text)
         return '\n'.join(results)
 
@@ -229,7 +230,7 @@ def test_match_cmd():
         r'''name=Kate, gender=woman, age=30''',
         r'''name=Carly, gender=woman, age=25''',
     ]
-    test_vector_upper = map(string.upper, test_vector)
+    test_vector_upper = list(map(str.upper, test_vector))
 
     pattern = r'''name=(?P<name>\w+)\s*,\s*gender=(?P<gender>\w+)\s*,\s*age=(?P<age>\d+).*'''
     i = 0
@@ -325,7 +326,7 @@ def test_resplit_cmd():
         assert items == tokes
     assert i == len(test_vector) - 1
 
-    test_vector2 = map(lambda s: s.replace('and', 'AND'), test_vector)
+    test_vector2 = list(map(lambda s: s.replace('and', 'AND'), test_vector))
     cmd3 = test_vector2 | resplit(sep, flags=re.I)
     i = 0
     for i, tokes in enumerate(cmd3):
@@ -352,7 +353,7 @@ def test_sub_cmd():
         assert s == target
     assert i == len(test_vector) - 1
 
-    test_vector2 = map(lambda s: s.replace('and', 'AND'), test_vector)
+    test_vector2 = list(map(lambda s: s.replace('and', 'AND'), test_vector))
     cmd2 = test_vector2 | sub(pattern, repl, flags=re.I)
     i = 0
     for i, s in enumerate(cmd2):
@@ -386,7 +387,7 @@ def test_subn_cmd():
         assert s == target
     assert i == len(test_vector) - 1
 
-    test_vector2 = map(lambda s: s.replace('and', 'AND'), test_vector)
+    test_vector2 = list(map(lambda s: s.replace('and', 'AND'), test_vector))
     cmd2 = test_vector2 | subn(pattern, repl, flags=re.I)
     i = 0
     for i, s in enumerate(cmd2):
@@ -464,8 +465,8 @@ def test_readline_cmd():
     for i, v in enumerate(cmd1):
         assert v.strip() == zen_of_python[i]
 
-    fd_list = map(lambda f: open(f, 'r'), files)
-    cmd2 = fd_list | readline(trim=string.strip, start=2, end=5)
+    fd_list = list(map(lambda f: open(f, 'r'), files))
+    cmd2 = fd_list | readline(trim=str.strip, start=2, end=5)
     i = 0
     for i, v in enumerate(cmd2, 2-1):
         assert v == zen_of_python[i]
@@ -476,7 +477,7 @@ def test_readline_cmd():
     try:
         cmd3.run()
     except Exception as e:
-        assert e.message == 'No input available for readline.'
+        assert e.args[0] == 'No input available for readline.'
 
     cmd4 = readline('zen_of_python.txt') | strip | upper
     for i, v in enumerate(cmd4):
@@ -509,7 +510,7 @@ def test_join_cmd():
 def test_fileobj_cmd():
     from os import path, remove
 
-    cmd1 = open('zen_of_python.txt') | rstrip | lstrip |upper
+    cmd1 = open('zen_of_python.txt') | rstrip | lstrip | upper
     for i, v in enumerate(cmd1):
         assert v == zen_of_python[i].upper()
 
@@ -566,3 +567,15 @@ def test_safe_substitute_cmd():
     for i, v in enumerate(cmd1):
         assert template.safe_substitute(test_vector[i]) == v
     assert i == len(test_vector) - 1
+
+def test_to_str_cmd():
+    cmd1 = zen_of_python | to_str(encoding='utf-8')
+    for i, v in enumerate(cmd1):
+        assert v == zen_of_python[i].encode('utf-8')
+
+    encoding = sys.stdout.encoding
+    del sys.stdout.encoding
+    cmd2 = zen_of_python | to_str
+    for i, v in enumerate(cmd2):
+        assert v == zen_of_python[i].encode('utf-8').decode('utf-8')
+    sys.stdout.encoding = encoding

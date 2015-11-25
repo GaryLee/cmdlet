@@ -8,8 +8,8 @@ if '../' not in sys.path:
 from cmdlet import *
 from cmdlet.cmds import *
 
-upper = pipe.map(string.upper)
-lower = pipe.map(string.lower)
+upper = pipe.map(str.upper)
+lower = pipe.map(str.lower)
 
 def test_pipe_ans():
     import string
@@ -77,7 +77,7 @@ def test_pipe_map():
 
     test_num = 100
     test_list = list(range(test_num))
-    upper = pipe.map(string.upper)
+    upper = pipe.map(str.upper)
     cmd1 = seq(test_list) | str | upper
     for i, data in enumerate(cmd1):
         assert str(i).upper() == data
@@ -86,7 +86,7 @@ def test_pipe_map():
     try:
         cmd2.run()
     except TypeError as e:
-        assert e.message == 'A mapper must have input.'
+        assert e.args[0] == 'A mapper must have input.'
 
 
 def test_pipe_filter():
@@ -95,7 +95,7 @@ def test_pipe_filter():
 
     test_num = 100
     test_list = list(range(test_num))
-    upper = pipe.map(string.upper)
+    upper = pipe.map(str.upper)
     less_or_equal_3 = pipe.filter(lambda x: x <= 3)
     cmd1 = seq(test_list) | less_or_equal_3 | str | upper
     for i, data in enumerate(cmd1):
@@ -108,7 +108,7 @@ def test_pipe_filter():
     try:
         cmd2.run()
     except TypeError as e:
-        assert e.message == 'A filter must have input.'
+        assert e.args[0] == 'A filter must have input.'
 
 
 def test_pipe_reduce():
@@ -137,7 +137,7 @@ def test_pipe_reduce():
     try:
         cmd3.run()
     except TypeError as e:
-        assert e.message == 'A reducer must have input.'
+        assert e.args[0] == 'A reducer must have input.'
 
 def test_pipe_stopper():
     register_default_types()
@@ -157,7 +157,7 @@ def test_pipe_stopper():
     try:
         cmd2.run()
     except TypeError as e:
-        assert e.message == 'A stopper must have input.'
+        assert e.args[0] == 'A stopper must have input.'
 
 def test_pipe_chain():
     import string

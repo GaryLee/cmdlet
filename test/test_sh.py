@@ -1,51 +1,52 @@
 #!python
 # coding: utf-8
 
+import sys
+import platform
+from os import path
+
+if '../' not in sys.path:
+    sys.path.insert(0, '../')
+
+from cmdlet.cmds import *
+
+is_py3 = sys.version_info >= (3, 0)
+
 def test_sh_input():
-    import sys
-    import platform
-    from os import path
-    if '../' not in sys.path:
-        sys.path.insert(0, '../')
-
-    from cmdlet.cmds import *
-
     register_default_types()
 
     test_vector = ['this', 'is', 'a', 'shell', 'input', 'output', 'test', '!!']
-    cmd=r'''python -c "from sys import stdout; [stdout.write('%%s\n' %% raw_input().upper()) for x in range(%d)]" ''' % len(test_vector)
+    if is_py3:
+        cmd=r'''py -3 -c "from sys import stdout; [stdout.write('%%s\n' %% input().upper()) for x in range(%d)]" ''' % len(test_vector)
+    else:
+        cmd=r'''py -2 -c "from sys import stdout; [stdout.write('%%s\n' %% raw_input().upper()) for x in range(%d)]" ''' % len(test_vector)
 
-    result_list = result(test_vector | sh(cmd))
+    result_list = result(test_vector | sh(cmd) | to_str)
     for i, item in enumerate(test_vector):
         assert item.upper() == result_list[i]
 
 def test_sh_output():
-    import sys
-    import platform
-    from os import path
-    if '../' not in sys.path:
-        sys.path.insert(0, '../')
-
-    from cmdlet.cmds import *
-
     register_default_types()
 
     if platform.system() == 'Windows':
         list_file_cmd = 'dir/b'
     else:
         list_file_cmd = '/bin/ls'
+    if is_py3:
+        list_file_cmd2 = sh(list_file_cmd, trim=bytes.rstrip)
+    else:
+        list_file_cmd2 = sh(list_file_cmd, trim=str.rstrip)
 
-    file_list = result(list_file_cmd | wildcard('*.py') | strip | lower)
+    file_list = result(list_file_cmd | to_str | wildcard('*.py') | strip | lower)
     assert path.basename(__file__).lower() in file_list
 
-def test_sh_without_cmd():
-    import sys
-    import platform
-    from os import path
-    if '../' not in sys.path:
-        sys.path.insert(0, '../')
+    file_list = result(list_file_cmd2 | to_str | wildcard('*.py') | strip | lower)
+    assert path.basename(__file__).lower() in file_list
 
-    from cmdlet.cmds import *
+
+def test_sh_without_cmd():
+    register_default_types()
+
     cmd1 = range(30) | sh
     for i, v in enumerate(cmd1):
         assert i == v

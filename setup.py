@@ -7,7 +7,7 @@ description = 'Cmdlet provides pipe-like mechanism to cascade functions and gene
 filepath = os.path.dirname(__file__)
 readme_file = os.path.join(filepath, 'README.md')
 
-if not os.path.exist(readme_file):
+if not os.path.exists(readme_file):
     long_description = description
 else:
     try:

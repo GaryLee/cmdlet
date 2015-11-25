@@ -1,13 +1,15 @@
 #!python
 
+import os
 from distutils.core import setup
 
-
+filepath = os.path.dirname(__file__)
+readme_file = os.path.join(filepath, 'README.md')
 try:
     import pypandoc
-    long_description = pypandoc.convert('README.md', 'rst')
+    long_description = pypandoc.convert(readme_file, 'rst')
 except(IOError, ImportError):
-    long_description = open('README.md').read()
+    long_description = open(readme_file).read()
 
 def extract_version(filename):
     import re

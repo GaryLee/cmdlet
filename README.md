@@ -29,7 +29,7 @@ for data in cmds:
 
 ```
 
-First, we created commands and use **|** to cascade them. Then, we execute
+First, we created commands and used **|** to cascade them. Then, we can execute
 commands by run(), result() or iterator.
 
 cmdlet can convert corresponding types to Pipe object automatically. In above
@@ -53,12 +53,12 @@ for topic in query_topic:
     print topic
 ```
 
-In above example, the goal is to query topic from article files. To achieve goal,
-we have to:
+In above example, the goal is to query topic from article files. To achieve the
+goal, we have to:
 
 1. Search text files in a given folder.
 2. Read first 10 lines from each file.
-3. Find the line that matched 'topc: foo bar' pattern.
+3. Find the line that matched 'topic: foo bar' pattern.
 4. Extract the topic string.
 
 With the utilities provided by *cmdlet.cmds*, we only need to write a few of

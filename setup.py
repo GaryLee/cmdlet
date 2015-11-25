@@ -3,13 +3,18 @@
 import os
 from distutils.core import setup
 
+description = 'Cmdlet provides pipe-like mechanism to cascade functions and generators.'
 filepath = os.path.dirname(__file__)
 readme_file = os.path.join(filepath, 'README.md')
-try:
-    import pypandoc
-    long_description = pypandoc.convert(readme_file, 'rst')
-except(IOError, ImportError):
-    long_description = open(readme_file).read()
+
+if not os.path.exist(readme_file):
+    long_description = description
+else:
+    try:
+        import pypandoc
+        long_description = pypandoc.convert(readme_file, 'rst')
+    except(IOError, ImportError):
+        long_description = open(readme_file).read()
 
 def extract_version(filename):
     import re
@@ -31,7 +36,7 @@ setup(
   name = 'cmdlet',
   packages = ['cmdlet'],
   version = version,
-  description = 'Cmdlet provides pipe-like mechanism to cascade functions and generators.',
+  description = description,
   long_description=long_description,
   author = 'Gary Lee',
   author_email = 'garywlee@gmail.com',

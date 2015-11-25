@@ -464,7 +464,7 @@ def test_readline_cmd():
     for i, v in enumerate(cmd1):
         assert v.strip() == zen_of_python[i]
 
-    fd_list = map(lambda f: file(f, 'r'), files)
+    fd_list = map(lambda f: open(f, 'r'), files)
     cmd2 = fd_list | readline(trim=string.strip, start=2, end=5)
     i = 0
     for i, v in enumerate(cmd2, 2-1):
@@ -509,7 +509,7 @@ def test_join_cmd():
 def test_fileobj_cmd():
     from os import path, remove
 
-    cmd1 = file('zen_of_python.txt') | rstrip | lstrip |upper
+    cmd1 = open('zen_of_python.txt') | rstrip | lstrip |upper
     for i, v in enumerate(cmd1):
         assert v == zen_of_python[i].upper()
 
@@ -518,7 +518,7 @@ def test_fileobj_cmd():
 
     assert not path.exists('zen_of_python-out.txt')
 
-    cmd1 = seq(zen_of_python) | upper | fileobj(file('zen_of_python-out.txt', 'w'), thru=True)
+    cmd1 = seq(zen_of_python) | upper | fileobj(open('zen_of_python-out.txt', 'w'), thru=True)
     i = 0
     for i, v in enumerate(cmd1):
         assert zen_of_python[i].upper() == v

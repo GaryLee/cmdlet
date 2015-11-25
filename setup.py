@@ -19,7 +19,7 @@ else:
 def extract_version(filename):
     import re
     pattern = re.compile(r'''__version__\s*=\s*"(?P<ver>[0-9\.]+)".*''')
-    with file(filename, 'r') as fd:
+    with open(filename, 'r') as fd:
         for line in fd:
             match = pattern.match(line)
             if match:

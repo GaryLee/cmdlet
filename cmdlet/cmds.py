@@ -503,7 +503,7 @@ def readline(prev, filename=None, mode='r', trim=string.rstrip, start=1, end=sys
         if isinstance(fn, types.FileType):
             fd = fn
         else:
-            fd = file(fn, mode)
+            fd = open(fn, mode)
 
         try:
             if start <= 1 and end == sys.maxsize:

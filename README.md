@@ -95,6 +95,14 @@ for topic in ('find ../mydoc2 -name "*.md" -print' | extract_topic):
 
 ```
 
+# How to install
+
+Just like other packages on PyPI. You can use pip to download and install
+automatically.
+
+```shell
+$ pip install cmdlet
+```
 
 # Run piped commands and get result
 

@@ -42,6 +42,6 @@ setup(
   author_email = 'garywlee@gmail.com',
   url = 'https://github.com/GaryLee/cmdlet',
   download_url = 'https://github.com/GaryLee/cmdlet/tarball/v%s%s' % (version, stage),
-  keywords = ['pipe', 'generator', 'iterator'],
+  keywords = ['pipe', 'generator', 'iterator', 'sh', 'shell', 'infix', 'operator'],
   classifiers = [],
 )

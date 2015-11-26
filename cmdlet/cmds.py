@@ -451,7 +451,7 @@ def wildcard(prev, pattern, *args, **kw):
 
 
 @pipe.func
-def stdout(prev, endl='', thru=False):
+def stdout(prev, endl='\n', thru=False):
     """This pipe read data from previous iterator and write it to stdout.
 
     :param prev: The previous iterator of pipe.
@@ -469,7 +469,7 @@ def stdout(prev, endl='', thru=False):
             yield i
 
 @pipe.func
-def stderr(prev, endl='', thru=False):
+def stderr(prev, endl='\n', thru=False):
     """This pipe read data from previous iterator and write it to stderr.
 
     :param prev: The previous iterator of pipe.

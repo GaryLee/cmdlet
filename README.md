@@ -33,7 +33,7 @@ First, we created commands and used **|** to cascade them. Then, we can execute
 commands by run(), result() or iterator.
 
 cmdlet can convert corresponding types to Pipe object automatically. In above
-example, range(10) is a iterator not a Pipe object. Because second item is
+example, range(10) is an iterator not a Pipe object. Because second item is
 a Pipe object(made by pipe.filter), it turns out first item to be converted
 to a Pipe object automatically.
 
@@ -357,8 +357,8 @@ directly.
 | type     | pipe.map     | Convert processed data to specified type    |
 | function | pipe.map     | Wrap function as a mapper.                  |
 | method   | pipe.map     | Wrap method as a mapper.                    |
-| tuple    | seq          | Wrap tuple to gernator.                     |
-| list     | seq          | Wrap list to gernator.                      |
+| tuple    | seq          | Wrap tuple to generator.                     |
+| list     | seq          | Wrap list to generator.                      |
 | str      | sh           | Wrap string to command line and execute it. |
 | unicode  | sh           | Wrap string to command line and execute it. |
 | file     | fileobj      | Wrap file object for read/write operation.  |

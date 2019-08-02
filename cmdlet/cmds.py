@@ -322,7 +322,7 @@ def grep(prev, pattern, *args, **kw):
     pattern_obj = re.compile(pattern, *args, **kw)
 
     for data in prev:
-        if bool(inv) ^ bool(pattern_obj.match(data)):
+        if bool(inv) ^ bool(pattern_obj.search(data)):
             yield data
 
 @pipe.func

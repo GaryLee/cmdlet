@@ -300,7 +300,7 @@ def format(prev, format_string):
     :returns: generator
     """
     for i in prev:
-        yield (format_string % i)
+        yield format_string.format(i)
 
 @pipe.func
 def grep(prev, *patterns, **kw):
@@ -569,7 +569,7 @@ def fileobj(prev, file_handle, endl='', thru=False):
 
 @pipe.func
 def sh(prev, *args, **kw):
-    """sh pipe execute shell command specified by args. If previous pipe exists,
+    """sh pipe executes shell command specified by args. If previous pipe exists,
     read data from it and write it to stdin of shell process. The stdout of
     shell process will be passed to next pipe object line by line.
 
@@ -625,6 +625,34 @@ def sh(prev, *args, **kw):
         yield trim(line)
 
     process.wait()
+
+@pipe.func
+def execmd(prev, *args, **kw):
+    """execmd pipe executes shell command specified by previous pipe. 
+
+    For example:
+
+    py_files = result(readline("dir_list.txt", trim=str.strip) | format("ls {}") | execmd )
+
+    :param prev: The previous iterator of pipe.
+    :type prev: Pipe
+    :param kw: arguments for subprocess.Popen.
+    :type kw: dictionary of options.
+    :returns: generator
+    """
+    trim = None if 'trim' not in kw else kw.pop('trim')
+    if trim is None:
+        trim = bytes.rstrip if is_py3 else str.rstrip
+
+    for cmdline in prev:
+        process = subprocess.Popen(cmdline, shell=True,
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+            **kw)
+        for line in process.stdout:
+            yield trim(line)
+
+        process.wait()
+
 
 @pipe.func
 def walk(prev, inital_path, *args, **kw):

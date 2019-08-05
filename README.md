@@ -352,16 +352,16 @@ raised.
 cmdlet.cmds has registered some basic types by default. You can use them
 directly.
 
-| Type     | wrapper      | Description                                 |
-| -------- | ------------ | ------------------------------------------- |
-| type     | pipe.map     | Convert processed data to specified type    |
-| function | pipe.map     | Wrap function as a mapper.                  |
-| method   | pipe.map     | Wrap method as a mapper.                    |
-| tuple    | seq          | Wrap tuple to generator.                     |
-| list     | seq          | Wrap list to generator.                      |
-| str      | sh           | Wrap string to command line and execute it. |
-| unicode  | sh           | Wrap string to command line and execute it. |
-| file     | fileobj      | Wrap file object for read/write operation.  |
+| Type     | wrapper  | Description                                 |
+| -------- | -------- | ------------------------------------------- |
+| type     | pipe.map | Convert processed data to specified type    |
+| function | pipe.map | Wrap function as a mapper.                  |
+| method   | pipe.map | Wrap method as a mapper.                    |
+| tuple    | seq      | Wrap tuple to generator.                    |
+| list     | seq      | Wrap list to generator.                     |
+| str      | sh       | Wrap string to command line and execute it. |
+| unicode  | sh       | Wrap string to command line and execute it. |
+| file     | fileobj  | Wrap file object for read/write operation.  |
 
 
 # cmdlet.cmds utilities.
@@ -384,51 +384,51 @@ cmdlet.cmds has predefined some commands. Here are brief descriptions.
 
 ## Pipe commands for file
 
-| Command  | Description                                                |
-| -------- | ---------------------------------------------------------- |
-| stdout   | Output data from previous pipe to stdout.                  |
-| stderr   | Output data from previous pipe to stderr.                  |
-| readline | Read data from file line by line.                          |
-| fileobj  | Read/write file with pipe data.                            |
+| Command  | Description                               |
+| -------- | ----------------------------------------- |
+| stdout   | Output data from previous pipe to stdout. |
+| stderr   | Output data from previous pipe to stderr. |
+| readline | Read data from file line by line.         |
+| fileobj  | Read/write file with pipe data.           |
 
 ## Pipe commands for shell
 
-| Command  | Description                                                |
-| -------- | ---------------------------------------------------------- |
-| sh       | Execute system shell script to handle the stdin/stdout.    |
-
+| Command | Description                                                                                                                                |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| sh      | Execute system shell script to handle the stdin/stdout. The data from previous pipe will be the standard input of specified shell command. |
+| execmd  | Execute system shell script to handle the stdin/stdout. The data from previous pipe will be the command line to be executed.               |
 
 ## Pipe commands for strings
 
 ### Alias of string method
 
-| Command         | Description                                           |
-| --------------- | ----------------------------------------------------- |
-| upper           | alias of string.upper                                 |
-| lower           | alias of string.lower                                 |
-| capwords        | alias of string.capwords                              |
-| capitalize      | alias of string.capitalize                            |
-| lstrip          | alias of string.lstrip                                |
-| rstrip          | alias of string.rstrip                                |
-| strip           | alias of string.strip                                 |
-| expandtabs      | alias of string.expandtabs                            |
-| strip           | alias of string.strip                                 |
-| find            | alias of string.find                                  |
-| format          | alias of % operator of string (not string.format)     |
-| rfind           | alias of string.rfind                                 |
-| count           | alias of string.count                                 |
-| split           | alias of string.split                                 |
-| rsplit          | alias of string.rsplit                                |
-| swapcase        | alias of string.swapcase                              |
-| translate       | alias of string.translate                             |
-| ljust           | alias of string.ljust                                 |
-| rjust           | alias of string.rjust                                 |
-| center          | alias of string.center                                |
-| zfill           | alias of string.zfill                                 |
-| replace         | alias of string.replace                               |
-| join            | alias of string.join                                  |
-| substitute      | alias of string.Template.substitute                   |
-| safe_substitute | alias of string.Template.safe_substitute              |
+| Command         | Description                                       |
+| --------------- | ------------------------------------------------- |
+| upper           | alias of string.upper                             |
+| lower           | alias of string.lower                             |
+| capwords        | alias of string.capwords                          |
+| capitalize      | alias of string.capitalize                        |
+| lstrip          | alias of string.lstrip                            |
+| rstrip          | alias of string.rstrip                            |
+| strip           | alias of string.strip                             |
+| expandtabs      | alias of string.expandtabs                        |
+| strip           | alias of string.strip                             |
+| find            | alias of string.find                              |
+| format          | alias of % operator of string (not string.format) |
+| rfind           | alias of string.rfind                             |
+| count           | alias of string.count                             |
+| split           | alias of string.split                             |
+| rsplit          | alias of string.rsplit                            |
+| swapcase        | alias of string.swapcase                          |
+| translate       | alias of string.translate                         |
+| ljust           | alias of string.ljust                             |
+| rjust           | alias of string.rjust                             |
+| center          | alias of string.center                            |
+| zfill           | alias of string.zfill                             |
+| replace         | alias of string.replace                           |
+| join            | alias of string.join                              |
+| substitute      | alias of string.Template.substitute               |
+| safe_substitute | alias of string.Template.safe_substitute          |
 
 ### String split, search and match
 

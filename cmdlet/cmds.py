@@ -302,15 +302,14 @@ def format(prev, format_string):
     for i in prev:
         yield (format_string % i)
 
-
 @pipe.func
-def grep(prev, pattern, *args, **kw):
+def grep(prev, *patterns, **kw):
     """The pipe greps the data passed from previous generator according to
     given regular expression.
 
     :param prev: The previous iterator of pipe.
     :type prev: Pipe
-    :param pattern: The pattern which used to filter out data.
+    :param patterns: The patterns which used to filter out data. When more than one pattern specified, the data is passed if it matches any pattern.
     :type pattern: str|unicode|re pattern object
     :param inv: If true, invert the match condition.
     :type inv: boolean
@@ -319,14 +318,21 @@ def grep(prev, pattern, *args, **kw):
     :returns: generator
     """
     inv = False if 'inv' not in kw else kw.pop('inv')
-    pattern_obj = re.compile(pattern, *args, **kw)
+    pattern_objs = []
+    for pattern in patterns:
+        pattern_objs.append(re.compile(pattern, **kw))
 
     for data in prev:
-        if bool(inv) ^ bool(pattern_obj.search(data)):
+        match = False
+        for pattern_obj in pattern_objs:
+            if bool(pattern_obj.search(data)):
+                match = True
+                break
+        if bool(inv) ^ match:
             yield data
 
 @pipe.func
-def match(prev, pattern, *args, **kw):
+def match(prev, *patterns, **kw):
     """The pipe greps the data passed from previous generator according to
     given regular expression. The data passed to next pipe is MatchObject
     , dict or tuple which determined by 'to' in keyword argument.
@@ -340,36 +346,33 @@ def match(prev, pattern, *args, **kw):
 
     :param prev: The previous iterator of pipe.
     :type prev: Pipe
-    :param pattern: The pattern which used to filter data.
+    :param pattern: The pattern which used to filter data. When more than one pattern specified, the data is passed if it matches any pattern.
     :type pattern: str|unicode
     :param to: What data type the result should be stored. dict|tuple|list
     :type to: type
     :returns: generator
     """
+    inv = False if 'inv' not in kw else kw.pop('inv')
     to = 'to' in kw and kw.pop('to')
-    pattern_obj = re.compile(pattern, *args, **kw)
+    pattern_objs = []
+    for pattern in patterns:
+        pattern_objs.append(re.compile(pattern, **kw))
 
-    if to is dict:
-        for data in prev:
+    for data in prev:
+        match = None
+        for pattern_obj in pattern_objs:
             match = pattern_obj.match(data)
             if match is not None:
+                break
+        if bool(inv) ^ (match is not None):
+            if to is dict:
                 yield match.groupdict()
-    elif to is tuple:
-        for data in prev:
-            match = pattern_obj.match(data)
-            if match is not None:
-                yield match.groups()
-    elif to is list:
-        for data in prev:
-            match = pattern_obj.match(data)
-            if match is not None:
+            elif to is tuple:
+                yield tuple(match.groups())
+            elif to is list:
                 yield list(match.groups())
-    else:
-        for data in prev:
-            match = pattern_obj.match(data)
-            if match is not None:
+            else:
                 yield match
-
 
 @pipe.func
 def resplit(prev, pattern, *args, **kw):

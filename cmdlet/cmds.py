@@ -426,13 +426,13 @@ def subn(prev, pattern, repl, *args, **kw):
 
 
 @pipe.func
-def wildcard(prev, pattern, *args, **kw):
+def wildcard(prev, *patterns, **kw):
     """wildcard pipe greps data passed from previous generator
     according to given regular expression.
 
     :param prev: The previous iterator of pipe.
     :type prev: Pipe
-    :param pattern: The wildcard string which used to filter data.
+    :param patterns: The wildcard string which used to filter data. When more than one pattern specified, the data is passed if it matches any pattern.
     :type pattern: str|unicode|re pattern object
     :param inv: If true, invert the match condition.
     :type inv: boolean
@@ -441,17 +441,18 @@ def wildcard(prev, pattern, *args, **kw):
     import fnmatch
 
     inv = 'inv' in kw and kw.pop('inv')
-    pattern_obj = re.compile(fnmatch.translate(pattern), *args, **kw)
-
-    if not inv:
-        for data in prev:
+    pattern_objs = []
+    for pattern in patterns:
+        pattern_objs.append(re.compile(fnmatch.translate(pattern), **kw))
+    
+    for data in prev:
+        is_match = False
+        for pattern_obj in pattern_objs:
             if pattern_obj.match(data):
-                yield data
-    else:
-        for data in prev:
-            if not pattern_obj.match(data):
-                yield data
-
+                is_match = True
+                break
+        if bool(inv) ^ is_match:
+            yield data
 
 @pipe.func
 def stdout(prev, endl='\n', thru=False):

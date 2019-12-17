@@ -573,10 +573,13 @@ def sh(prev, *args, **kw):
     read data from it and write it to stdin of shell process. The stdout of
     shell process will be passed to next pipe object line by line.
 
-    A optional keyword argument 'trim' can pass a function into sh pipe. It is
-    used to trim the output from shell process. The default trim function is
-    str.rstrip. Therefore, any space characters in tail of
-    shell process output line will be removed.
+    Optional keyword arguments:
+    - trim: Pass a function into sh pipe. It is used to trim the output from shell process. 
+        The default trim function is str.rstrip. Therefore, any space characters in tail of
+        shell process output line will be removed.
+    - endl: Append the specified to each input line from previous pipe.
+    - returncode: Set the expected returncode. It the returncode of process doesn't not equal to this value. A
+        subprocess.CalledProcessError will be raised.
 
     For example:
 
@@ -591,6 +594,7 @@ def sh(prev, *args, **kw):
     :returns: generator
     """
     endl = '\n' if 'endl' not in kw else kw.pop('endl')
+    returncode = None if 'returncode' not in kw else kw.pop('returncode')
     trim = None if 'trim' not in kw else kw.pop('trim')
     if trim is None:
         trim = bytes.rstrip if is_py3 else str.rstrip
@@ -623,8 +627,9 @@ def sh(prev, *args, **kw):
 
     for line in process.stdout:
         yield trim(line)
-
     process.wait()
+    if returncode is not None and returncode != process.returncode:
+        raise subprocess.CalledProcessError(returncode=process.returncode, cmd=cmdline)
 
 @pipe.func
 def execmd(prev, *args, **kw):
@@ -640,6 +645,7 @@ def execmd(prev, *args, **kw):
     :type kw: dictionary of options.
     :returns: generator
     """
+    returncode = None if 'returncode' not in kw else kw.pop('returncode')
     trim = None if 'trim' not in kw else kw.pop('trim')
     if trim is None:
         trim = bytes.rstrip if is_py3 else str.rstrip
@@ -650,9 +656,9 @@ def execmd(prev, *args, **kw):
             **kw)
         for line in process.stdout:
             yield trim(line)
-
         process.wait()
-
+        if returncode is not None and returncode != process.returncode:
+            raise subprocess.CalledProcessError(returncode=process.returncode, cmd=cmdline)
 
 @pipe.func
 def walk(prev, inital_path, *args, **kw):

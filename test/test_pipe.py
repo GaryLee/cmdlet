@@ -17,16 +17,16 @@ def test_pipe_ans():
     register_default_types()
     test_num = 100
 
-    cmd_upper = format('fOo%d') | upper
-    cmd_lower = lower | format('%sBaR')
+    cmd_upper = fmt('fOo{}') | upper
+    cmd_lower = lower | fmt('{}BaR')
 
     cmd1 = range(test_num) | cmd_upper
     ans = cmd1.run()
-    assert ans == ('FOO%d' % (test_num-1))
+    assert ans == ('FOO{}'.format(test_num-1))
 
     cmd2 = range(test_num) | cmd_upper | cmd_lower
     ans = cmd2.run()
-    assert ans == ('foo%dBaR' % (test_num-1))
+    assert ans == ('foo{}BaR'.format(test_num-1))
 
 
 def test_pipe_result():
@@ -35,16 +35,16 @@ def test_pipe_result():
     register_default_types()
     test_num = 100
 
-    cmd_upper = format('fOo%d') | upper
-    cmd_lower = lower | format('%sBaR')
+    cmd_upper = fmt('fOo{}') | upper
+    cmd_lower = lower | fmt('{}BaR')
 
     cmd1 = range(test_num) | cmd_upper
     for i, data in enumerate(cmd1.result()):
-        assert data == ('FOO%d' % i)
+        assert data == ('FOO{}'.format(i))
 
     cmd2 = range(test_num) | cmd_upper | cmd_lower
     for i, data in enumerate(cmd2.result()):
-        assert data == ('foo%dBaR' % i)
+        assert data == ('foo{}BaR'.format(i))
 
 
 def test_pipe_iter():
@@ -53,22 +53,22 @@ def test_pipe_iter():
     register_default_types()
     test_num = 100
 
-    cmd_upper = format('fOo%d') | upper
-    cmd_lower = lower | format('%sBaR')
+    cmd_upper = fmt('fOo{}') | upper
+    cmd_lower = lower | fmt('{}BaR')
 
     cmd1 = range(test_num) | cmd_upper
     for i, data in enumerate(cmd1):
-        assert data == ('FOO%d' % i)
+        assert data == ('FOO{}'.format(i))
 
     cmd2 = range(test_num) | cmd_upper | cmd_lower
     for i, data in enumerate(cmd2):
-        assert data == ('foo%dBaR' % i)
+        assert data == ('foo{}BaR'.format(i))
 
     for i, data in enumerate(cmd1.iter()):
-        assert data == ('FOO%d' % i)
+        assert data == ('FOO{}'.format(i))
 
     for i, data in enumerate(cmd2.iter()):
-        assert data == ('foo%dBaR' % i)
+        assert data == ('foo{}BaR'.format(i))
 
 
 def test_pipe_map():

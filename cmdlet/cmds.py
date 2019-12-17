@@ -288,7 +288,7 @@ def pack(prev, n, rest=False, **kw):
 
 
 @pipe.func
-def format(prev, format_string):
+def fmt(prev, format_string):
     """The pipe formats the data passed from previous generator according to
     given format_string argument.
 
@@ -300,6 +300,7 @@ def format(prev, format_string):
     :returns: generator
     """
     for i in prev:
+        print(format_string, i, format_string.format(i))
         yield format_string.format(i)
 
 @pipe.func
@@ -637,7 +638,7 @@ def execmd(prev, *args, **kw):
 
     For example:
 
-    py_files = result(readline("dir_list.txt", trim=str.strip) | format("ls {}") | execmd )
+    py_files = result(readline("dir_list.txt", trim=str.strip) | fmt("ls {}") | execmd )
 
     :param prev: The previous iterator of pipe.
     :type prev: Pipe

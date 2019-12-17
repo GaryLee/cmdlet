@@ -29,7 +29,7 @@ def test_cmds_import():
         sys.path.insert(0, '../')
 
     match_names = ['Pipe', 'PipeFunction', 'StringIO', 'count', 'enum',
-        'fileobj', 'flatten', 'format', 'grep', 'items', 'match', 'pack',
+        'fileobj', 'flatten', 'fmt', 'grep', 'items', 'match', 'pack',
         'pipe', 'register_default_types', 'register_type', 'result', 'run',
         'seq', 'sh', 'stderr', 'stdout', 'unregister_type', 'wildcard']
 

@@ -17,9 +17,9 @@ def test_sh_input():
 
     test_vector = ['this', 'is', 'a', 'shell', 'input', 'output', 'test', '!!']
     if is_py3:
-        cmd=r'''py -3 -c "from sys import stdout; [stdout.write('%%s\n' %% input().upper()) for x in range(%d)]" ''' % len(test_vector)
+        cmd=r'''python3 -c "from sys import stdout; [stdout.write('%%s\n' %% input().upper()) for x in range(%d)]" ''' % len(test_vector)
     else:
-        cmd=r'''py -2 -c "from sys import stdout; [stdout.write('%%s\n' %% raw_input().upper()) for x in range(%d)]" ''' % len(test_vector)
+        cmd=r'''python -c "from sys import stdout; [stdout.write('%%s\n' %% raw_input().upper()) for x in range(%d)]" ''' % len(test_vector)
 
     result_list = result(test_vector | sh(cmd) | to_str)
     for i, item in enumerate(test_vector):

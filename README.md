@@ -9,7 +9,7 @@ mechanism in Unix shell. For example:
 from cmdlet.cmds import *
 
 # Create piped commands.
-cmds = range(10) | pipe.filter(lambda x: x > 5) | format('item#%d')
+cmds = range(10) | pipe.filter(lambda x: x > 5) | fmt('item#%d')
 
 # Execute commands and return the last processed data.
 run(cmds)

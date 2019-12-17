@@ -38,7 +38,7 @@ a Pipe object(made by pipe.filter), it turns out first item to be converted
 to a Pipe object automatically.
 
 There are many useful utilities in cmdlet.cmds modules. They can provide a great
-convenience to build up useful pipes. Here is a example:
+convenience to build up useful pipes. Here is an example:
 
 ```python
 from cmdlet.cmds import *
@@ -414,7 +414,7 @@ cmdlet.cmds has predefined some commands. Here are brief descriptions.
 | expandtabs      | alias of string.expandtabs                        |
 | strip           | alias of string.strip                             |
 | find            | alias of string.find                              |
-| format          | alias of % operator of string (not string.format) |
+| fmt             | alias of % operator of string (not string.format) |
 | rfind           | alias of string.rfind                             |
 | count           | alias of string.count                             |
 | split           | alias of string.split                             |

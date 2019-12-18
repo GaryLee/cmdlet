@@ -32,10 +32,7 @@ def test_sh_output():
         list_file_cmd = 'dir/b'
     else:
         list_file_cmd = '/bin/ls'
-    if is_py3:
-        list_file_cmd2 = sh(list_file_cmd, trim=bytes.rstrip)
-    else:
-        list_file_cmd2 = sh(list_file_cmd, trim=str.rstrip)
+    list_file_cmd2 = sh(list_file_cmd, trim=lambda s: s.rstrip())
 
     file_list = result(list_file_cmd | to_str | wildcard('*.py') | strip | lower)
     assert path.basename(__file__).lower() in file_list

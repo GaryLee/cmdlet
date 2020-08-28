@@ -651,7 +651,11 @@ def execmd(prev, *args, **kw):
     :returns: generator
     """
     returncode = None if 'returncode' not in kw else kw.pop('returncode')
-    decode = functools.partial(codecs.decode, encoding=locale.getdefaultlocale()[1]) if 'decode' not in kw else kw.pop('decode')
+    if PY3:
+        decode = functools.partial(codecs.decode, encoding=locale.getdefaultlocale()[1]) if 'decode' not in kw else kw.pop('decode')
+    else:
+        decode = functools.partial(codecs.decode, locale.getdefaultlocale()[1]) if 'decode' not in kw else kw.pop('decode')
+
     trim = (lambda s: s.rstrip()) if 'trim' not in kw else kw.pop('trim')
 
     for cmdline in prev:

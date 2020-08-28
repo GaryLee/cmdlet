@@ -200,23 +200,23 @@ def test_grep_cmd():
                 results.append(text)
         return '\n'.join(results)
 
-    cmd1 = zen_of_python | grep('.*\s+is better than\s+.*')
+    cmd1 = zen_of_python | grep(r'.*\s+is better than\s+.*')
     grep_result = '\n'.join(cmd1.result())
-    assert grep_result == grep_and_merge(re.compile('.*\s+is better than\s+.*'), zen_of_python)
+    assert grep_result == grep_and_merge(re.compile(r'.*\s+is better than\s+.*'), zen_of_python)
 
-    cmd2 = zen_of_python | grep('.*\s+is better than\s+.*', inv=True)
+    cmd2 = zen_of_python | grep(r'.*\s+is better than\s+.*', inv=True)
     grep_result = '\n'.join(cmd2.result())
-    assert grep_result == grep_and_merge(re.compile('.*\s+is better than\s+.*'), zen_of_python, inv=True)
+    assert grep_result == grep_and_merge(re.compile(r'.*\s+is better than\s+.*'), zen_of_python, inv=True)
 
-    cmd3 = zen_of_python_uppercase | grep('.*\s+is better than\s+.*', flags=re.I)
+    cmd3 = zen_of_python_uppercase | grep(r'.*\s+is better than\s+.*', flags=re.I)
     grep_result = '\n'.join(cmd3.result())
-    target_result = grep_and_merge(re.compile('.*\s+is better than\s+.*'), zen_of_python)
+    target_result = grep_and_merge(re.compile(r'.*\s+is better than\s+.*'), zen_of_python)
     target_result = target_result.upper()
     assert grep_result == target_result
 
-    cmd4 = zen_of_python_uppercase | grep('.*\s+is better than\s+.*', inv=True, flags=re.I)
+    cmd4 = zen_of_python_uppercase | grep(r'.*\s+is better than\s+.*', inv=True, flags=re.I)
     grep_result = '\n'.join(cmd4.result())
-    target_result = grep_and_merge(re.compile('.*\s+is better than\s+.*'), zen_of_python, inv=True)
+    target_result = grep_and_merge(re.compile(r'.*\s+is better than\s+.*'), zen_of_python, inv=True)
     target_result = target_result.upper()
     assert grep_result == target_result
 

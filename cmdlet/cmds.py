@@ -601,7 +601,7 @@ def sh(prev, *args, **kw):
     if PY3:
         decode = functools.partial(codecs.decode, encoding=locale.getdefaultlocale()[1]) if 'decode' not in kw else kw.pop('decode')
     else:
-        decode = functools.partial(codecs.decode, locale.getdefaultlocale()[1]) if 'decode' not in kw else kw.pop('decode')
+        decode = (lambda ln: codecs.decode(ln, locale.getdefaultlocale()[1])) if 'decode' not in kw else kw.pop('decode')
     trim = (lambda s: s.rstrip()) if 'trim' not in kw else kw.pop('trim')
 
     cmdline = ' '.join(args)
@@ -632,6 +632,7 @@ def sh(prev, *args, **kw):
 
     for line in process.stdout:
         yield trim(decode(line))
+            
     process.wait()
     if returncode is not None and returncode != process.returncode:
         raise subprocess.CalledProcessError(returncode=process.returncode, cmd=cmdline)
@@ -654,7 +655,7 @@ def execmd(prev, *args, **kw):
     if PY3:
         decode = functools.partial(codecs.decode, encoding=locale.getdefaultlocale()[1]) if 'decode' not in kw else kw.pop('decode')
     else:
-        decode = functools.partial(codecs.decode, locale.getdefaultlocale()[1]) if 'decode' not in kw else kw.pop('decode')
+        decode = (lambda ln: codecs.decode(ln, locale.getdefaultlocale()[1])) if 'decode' not in kw else kw.pop('decode')
 
     trim = (lambda s: s.rstrip()) if 'trim' not in kw else kw.pop('trim')
 

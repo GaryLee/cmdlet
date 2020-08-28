@@ -2,8 +2,6 @@
 # coding: utf-8
 
 import sys
-if '../' not in sys.path:
-    sys.path.insert(0, '../')
 
 from cmdlet import *
 from cmdlet.cmds import *

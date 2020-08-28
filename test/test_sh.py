@@ -4,10 +4,6 @@
 import sys
 import platform
 from os import path
-
-if '../' not in sys.path:
-    sys.path.insert(0, '../')
-
 from cmdlet.cmds import *
 
 is_py3 = sys.version_info >= (3, 0)
@@ -29,9 +25,9 @@ def test_sh_output():
     register_default_types()
 
     if platform.system() == 'Windows':
-        list_file_cmd = 'dir/b'
+        list_file_cmd = 'dir/b test'
     else:
-        list_file_cmd = '/bin/ls'
+        list_file_cmd = '/bin/ls test'
     list_file_cmd2 = sh(list_file_cmd, trim=lambda s: s.rstrip())
 
     file_list = result(list_file_cmd | to_str | wildcard('*.py') | strip | lower)

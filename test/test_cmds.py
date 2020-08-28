@@ -2,11 +2,12 @@
 # coding: utf-8
 
 import sys
-if '../' not in sys.path:
-    sys.path.insert(0, '../')
-
+import os
 from cmdlet import *
 from cmdlet.cmds import *
+
+script_path = os.path.dirname(os.path.abspath(__file__))
+test_file_location = os.path.join(script_path, 'zen_of_python.txt')
 
 register_default_types()
 
@@ -459,7 +460,7 @@ def test_stderr_cmd():
 
 
 def test_readline_cmd():
-    files = ['zen_of_python.txt', ]
+    files = [test_file_location, ]
 
     cmd1 = files | readline
     for i, v in enumerate(cmd1):
@@ -479,11 +480,11 @@ def test_readline_cmd():
     except Exception as e:
         assert e.args[0] == 'No input available for readline.'
 
-    cmd4 = readline('zen_of_python.txt') | strip | upper
+    cmd4 = readline(test_file_location) | strip | upper
     for i, v in enumerate(cmd4):
         assert zen_of_python[i].upper() == v
 
-    cmd5 = readline(['zen_of_python.txt', 'zen_of_python.txt']) | strip | upper
+    cmd5 = readline([test_file_location, test_file_location]) | strip | upper
     for i, v in enumerate(cmd5):
         if i < len(zen_of_python):
             assert zen_of_python[i].upper() == v
@@ -510,7 +511,7 @@ def test_join_cmd():
 def test_fileobj_cmd():
     from os import path, remove
 
-    cmd1 = open('zen_of_python.txt') | rstrip | lstrip | upper
+    cmd1 = open(test_file_location) | rstrip | lstrip | upper
     for i, v in enumerate(cmd1):
         assert v == zen_of_python[i].upper()
 

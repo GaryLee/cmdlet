@@ -3,8 +3,6 @@
 
 def test_cmdlet_import():
     import sys
-    if '../' not in sys.path:
-        sys.path.insert(0, '../')
 
     match_names = [
         'Pipe',

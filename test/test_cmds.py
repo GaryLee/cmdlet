@@ -3,6 +3,7 @@
 
 import sys
 import os
+import six
 from cmdlet import *
 from cmdlet.cmds import *
 
@@ -574,6 +575,11 @@ def test_to_str_cmd():
     for i, v in enumerate(cmd1):
         assert v == zen_of_python[i].encode('utf-8')
 
+    if six.PY2:
+        encoding = sys.stdout.encoding
+        del sys.stdout.encoding
     cmd2 = zen_of_python | to_str
     for i, v in enumerate(cmd2):
         assert v == zen_of_python[i].encode('utf-8').decode('utf-8')
+    if six.PY2:
+        sys.stdout.encoding = encoding

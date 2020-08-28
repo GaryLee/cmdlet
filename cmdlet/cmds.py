@@ -12,24 +12,23 @@ import re
 import types
 import subprocess
 import string
+import locale
+import codecs
+import functools
+from six import PY3, StringIO, text_type, string_types
 from cmdlet import Pipe, PipeFunction, register_type, unregister_type
-
-is_py3 = sys.version_info >= (3, 0)
-
-if is_py3:
-    from io import StringIO
-else:
-    from StringIO import StringIO
 
 #: Alias of cmdlet.PipeFuncion.
 pipe = PipeFunction
 
 #: data type of file for different python version.
-file_type = io.IOBase if is_py3 else file
+if PY3:
+    file = io.IOBase
+file_type = file
 #: data type of string for different python version.
-string_type = bytes if is_py3 else str
+string_type = string_types
 #: data type of unicode for different python version.
-unicode_type = str if is_py3 else unicode
+unicode_type = text_type
 
 #: Check if is string or unicode
 is_str_type = lambda x: isinstance(x, (string_type, unicode_type))
@@ -492,7 +491,7 @@ def stderr(prev, endl='\n', thru=False):
             yield i
 
 @pipe.func
-def readline(prev, filename=None, mode='r', trim=str.rstrip, start=1, end=sys.maxsize):
+def readline(prev, filename=None, mode='r', trim=None, start=1, end=sys.maxsize):
     """This pipe get filenames or file object from previous pipe and read the
     content of file. Then, send the content of file line by line to next pipe.
 
@@ -512,6 +511,8 @@ def readline(prev, filename=None, mode='r', trim=str.rstrip, start=1, end=sys.ma
     :type end: integer
     :returns: generator
     """
+    if trim is None:
+        trim = lambda s: s.rstrip()
     if prev is None:
         if filename is None:
             raise Exception('No input available for readline.')
@@ -581,6 +582,7 @@ def sh(prev, *args, **kw):
     - endl: Append the specified to each input line from previous pipe.
     - returncode: Set the expected returncode. It the returncode of process doesn't not equal to this value. A
         subprocess.CalledProcessError will be raised.
+    - decode: The codecs to be used to decode the output of shell.
 
     For example:
 
@@ -596,9 +598,8 @@ def sh(prev, *args, **kw):
     """
     endl = '\n' if 'endl' not in kw else kw.pop('endl')
     returncode = None if 'returncode' not in kw else kw.pop('returncode')
-    trim = None if 'trim' not in kw else kw.pop('trim')
-    if trim is None:
-        trim = bytes.rstrip if is_py3 else str.rstrip
+    decode = functools.partial(codecs.decode, encoding=locale.getdefaultlocale()[1]) if 'decode' not in kw else kw.pop('decode')
+    trim = (lambda s: s.rstrip()) if 'trim' not in kw else kw.pop('trim')
 
     cmdline = ' '.join(args)
     if not cmdline:
@@ -618,7 +619,7 @@ def sh(prev, *args, **kw):
             stdin_buffer.write(i)
             if endl:
                 stdin_buffer.write(endl)
-        if is_py3:
+        if PY3:
             process.stdin.write(stdin_buffer.getvalue().encode('utf-8'))
         else:
             process.stdin.write(stdin_buffer.getvalue())
@@ -627,7 +628,7 @@ def sh(prev, *args, **kw):
         stdin_buffer.close()
 
     for line in process.stdout:
-        yield trim(line)
+        yield trim(decode(line))
     process.wait()
     if returncode is not None and returncode != process.returncode:
         raise subprocess.CalledProcessError(returncode=process.returncode, cmd=cmdline)
@@ -647,16 +648,15 @@ def execmd(prev, *args, **kw):
     :returns: generator
     """
     returncode = None if 'returncode' not in kw else kw.pop('returncode')
-    trim = None if 'trim' not in kw else kw.pop('trim')
-    if trim is None:
-        trim = bytes.rstrip if is_py3 else str.rstrip
+    decode = functools.partial(codecs.decode, encoding=locale.getdefaultlocale()[1]) if 'decode' not in kw else kw.pop('decode')
+    trim = (lambda s: s.rstrip()) if 'trim' not in kw else kw.pop('trim')
 
     for cmdline in prev:
         process = subprocess.Popen(cmdline, shell=True,
             stdin=subprocess.PIPE, stdout=subprocess.PIPE,
             **kw)
         for line in process.stdout:
-            yield trim(line)
+            yield trim(decode(line))
         process.wait()
         if returncode is not None and returncode != process.returncode:
             raise subprocess.CalledProcessError(returncode=process.returncode, cmd=cmdline)
@@ -772,7 +772,7 @@ def register_default_types():
     register_type(unicode_type, sh)
     register_type(file_type, fileobj)
 
-    if is_py3:
+    if PY3:
         register_type(range, seq)
         register_type(map, seq)
 

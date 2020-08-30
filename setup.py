@@ -1,7 +1,7 @@
 #!python
 
 import os
-from distutils.core import setup
+from setuptools import setup
 
 description = 'Cmdlet provides pipe-like mechanism to cascade functions and generators.'
 filepath = os.path.dirname(__file__)
@@ -12,8 +12,8 @@ if not os.path.exists(readme_file):
 else:
     try:
         import pypandoc
-        long_description = pypandoc.convert(readme_file, 'rst')
-    except(IOError, ImportError):
+        long_description = pypandoc.convert_file(readme_file, 'rst')
+    except:
         long_description = open(readme_file).read()
 
 def extract_version(filename):
@@ -38,6 +38,7 @@ setup(
     version = version,
     description = description,
     long_description = long_description,
+    long_description_content_type = 'text/markdown',
     author = 'Gary Lee',
     author_email = 'garywlee@gmail.com',
     url = 'https://github.com/GaryLee/cmdlet',

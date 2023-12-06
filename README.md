@@ -254,21 +254,21 @@ less_than = pipe.filter(lambda data, thrd: data < thrd)
 ## pipe.reduce(function)
 
 Wrap function as a reducer. A reducer is a function which has at least two
-arguments. The first one is used as accumulated result, the second one is
-the data to be processed. A optional keyword argument *init* can be used to
+arguments. The first one is the data to be processed. The second one is used 
+as accumulated result. A optional keyword argument *init* can be used to
 specify initial value to accumulated result. It looks like:
 
 ```python
 @pipe.reduce
-def my_reducer(accum_result, data):
+def my_reducer(data, accum_result):
     # Calculate new accum_result according to data.
-    return accum_result
+    return accum_result + len(data)
 ```
 
 For example:
 ```python
 @pipe.reduce
-def count_mod(accum_result, data, mod_by):
+def count_mod(data, accum_result, mod_by):
     if (data % mod_by) == 0:
         return accum_result
     else:
@@ -310,7 +310,7 @@ def in_range(data, lower_bound, upper_bound):
     return data >= lower_bound and data <= upper_bound
 
 @pipe.reduce
-def count(accum_result, data):
+def count(data, accum_result):
     return accum_result + 1
 
 @pipe.map

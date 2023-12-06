@@ -114,7 +114,7 @@ def test_pipe_reduce():
     register_default_types()
 
     @pipe.reduce
-    def count_mod_10(accu, data):
+    def count_mod_10(data, accu):
         return accu + (1 if (data % 10) == 0 else 0)
 
     test_num = 100
@@ -162,7 +162,7 @@ def test_pipe_chain():
     register_default_types()
 
     @pipe.reduce
-    def count(accu, data, **kw):
+    def count(data, accu, **kw):
         return accu + 1
 
     @pipe.filter

@@ -317,7 +317,7 @@ def grep(prev, *patterns, **kw):
     :type kw: dict
     :returns: generator
     """
-    inv = False if 'inv' not in kw else kw.pop('inv')
+    inv = kw.pop('inv', False)
     pattern_objs = []
     for pattern in patterns:
         pattern_objs.append(re.compile(pattern, **kw))
@@ -352,8 +352,8 @@ def match(prev, *patterns, **kw):
     :type to: type
     :returns: generator
     """
-    inv = False if 'inv' not in kw else kw.pop('inv')
-    to = 'to' in kw and kw.pop('to')
+    inv = kw.pop('inv', False)
+    to = kw.pop('to', None)
     pattern_objs = []
     for pattern in patterns:
         pattern_objs.append(re.compile(pattern, **kw))
@@ -385,7 +385,7 @@ def resplit(prev, pattern, *args, **kw):
     :param pattern: The pattern which used to split string.
     :type pattern: str|unicode
     """
-    maxsplit = 0 if 'maxsplit' not in kw else kw.pop('maxsplit')
+    maxsplit = kw.pop('maxsplit', 0)
     pattern_obj = re.compile(pattern, *args, **kw)
     for s in prev:
         yield pattern_obj.split(s, maxsplit=maxsplit)
@@ -402,7 +402,7 @@ def sub(prev, pattern, repl, *args, **kw):
     :param repl: Check repl argument in re.sub method.
     :type repl: str|unicode|callable
     """
-    count = 0 if 'count' not in kw else kw.pop('count')
+    count = kw.pop('count', 0)
     pattern_obj = re.compile(pattern, *args, **kw)
     for s in prev:
         yield pattern_obj.sub(repl, s, count=count)
@@ -419,7 +419,7 @@ def subn(prev, pattern, repl, *args, **kw):
     :param repl: Check repl argument in re.sub method.
     :type repl: str|unicode|callable
     """
-    count = 0 if 'count' not in kw else kw.pop('count')
+    count = kw.pop('count', 0)
     pattern_obj = re.compile(pattern, *args, **kw)
     for s in prev:
         yield pattern_obj.subn(repl, s, count=count)
@@ -440,7 +440,7 @@ def wildcard(prev, *patterns, **kw):
     """
     import fnmatch
 
-    inv = 'inv' in kw and kw.pop('inv')
+    inv = kw.pop('inv', False)
     pattern_objs = []
     for pattern in patterns:
         pattern_objs.append(re.compile(fnmatch.translate(pattern), **kw))
@@ -583,6 +583,7 @@ def sh(prev, *args, **kw):
     - returncode: Set the expected returncode. It the returncode of process doesn't not equal to this value. A
         subprocess.CalledProcessError will be raised.
     - decode: The codecs to be used to decode the output of shell.
+    - stderr: If provided, the stderr of shell process will be passed to next pipe object with a prefix specified by stderr argument.
 
     For example:
 
@@ -596,8 +597,9 @@ def sh(prev, *args, **kw):
     :type kw: dictionary of options.
     :returns: generator
     """
-    endl = '\n' if 'endl' not in kw else kw.pop('endl')
-    returncode = None if 'returncode' not in kw else kw.pop('returncode')
+    endl = kw.pop('endl', '\n')
+    returncode = kw.pop('returncode', None)
+    stderr = kw.pop('stderr', False)
     if PY3:
         decode = functools.partial(codecs.decode, encoding=locale.getdefaultlocale()[1]) if 'decode' not in kw else kw.pop('decode')
     else:
@@ -614,7 +616,8 @@ def sh(prev, *args, **kw):
                 yield None
 
     process = subprocess.Popen(cmdline, shell=True,
-        stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+        stdin=subprocess.PIPE, stdout=subprocess.PIPE, 
+        stderr=None if not stderr else subprocess.PIPE,
         **kw)
     if prev is not None:
         stdin_buffer = StringIO()
@@ -632,6 +635,12 @@ def sh(prev, *args, **kw):
 
     for line in process.stdout:
         yield trim(decode(line))
+    if stderr is not False and process.stderr:
+        for line in process.stderr:
+            if isinstance(stderr, str):
+                yield stderr + trim(decode(line))
+            else:
+                yield trim(decode(line))
             
     process.wait()
     if returncode is not None and returncode != process.returncode:
@@ -651,20 +660,27 @@ def execmd(prev, *args, **kw):
     :type kw: dictionary of options.
     :returns: generator
     """
-    returncode = None if 'returncode' not in kw else kw.pop('returncode')
+    returncode = kw.pop('returncode', None)
+    stderr = kw.pop('stderr', False)
     if PY3:
         decode = functools.partial(codecs.decode, encoding=locale.getdefaultlocale()[1]) if 'decode' not in kw else kw.pop('decode')
     else:
         decode = (lambda ln: codecs.decode(ln, locale.getdefaultlocale()[1])) if 'decode' not in kw else kw.pop('decode')
-
     trim = (lambda s: s.rstrip()) if 'trim' not in kw else kw.pop('trim')
 
     for cmdline in prev:
         process = subprocess.Popen(cmdline, shell=True,
             stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+            stderr=None if not stderr else subprocess.PIPE,
             **kw)
         for line in process.stdout:
             yield trim(decode(line))
+        if stderr is not False and process.stderr:
+            for line in process.stderr:
+                if isinstance(stderr, str):
+                    yield stderr + trim(decode(line))
+                else:
+                    yield trim(decode(line))
         process.wait()
         if returncode is not None and returncode != process.returncode:
             raise subprocess.CalledProcessError(returncode=process.returncode, cmd=cmdline)

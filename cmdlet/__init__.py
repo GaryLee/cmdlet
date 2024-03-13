@@ -17,7 +17,7 @@ from . import cmds
 
 __license__ = "MIT"
 __author__ = "Gary Lee <garywlee@gmail.com>"
-__version__ = "0.4.4"
+__version__ = "0.4.5"
 __docformat__ = "reStructuredText"
 
 __all__ = [

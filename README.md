@@ -103,6 +103,11 @@ automatically.
 ```shell
 $ pip install cmdlet
 ```
+Alternatively, you can install from github directly.
+
+```shell
+$ pip install git+https://github.com/GaryLee/cmdlet.git
+```
 
 # Run piped commands and get result
 

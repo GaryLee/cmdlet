@@ -491,7 +491,7 @@ def stderr(prev, endl='\n', thru=False):
             yield i
 
 @pipe.func
-def readline(prev, filename=None, mode='r', trim=None, start=1, end=sys.maxsize, encoding=None):
+def readline(prev, filename=None, mode='r', trim=None, start=1, end=sys.maxsize, encoding='utf-8'):
     """This pipe get filenames or file object from previous pipe and read the
     content of file. Then, send the content of file line by line to next pipe.
 
